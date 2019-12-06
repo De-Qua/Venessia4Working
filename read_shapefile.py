@@ -10,7 +10,7 @@ import os
 
 
 folder = os.getcwd()
-shapefile = gpd.read_file(folder + "/data" + "/CV_LIV.shp")
+shapefile = gpd.read_file(folder + "/data" + "/EL_STR.shp")
 # scrive sulla console il contenuto del file
 print(shapefile)
 
@@ -19,7 +19,7 @@ shapefile.plot()
 plt.show()
 
 #blocca il debug
-#pdb.set_trace()
+pdb.set_trace()
 
 # test con il shapefile..
 #shapefile.cx
