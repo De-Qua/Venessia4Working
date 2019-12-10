@@ -11,8 +11,8 @@ from mydifflib import get_close_matches_indexes
 
 
 folder = os.getcwd()
-streets_graph = gpd.read_file(folder + "/data" + "/EL_STR.shp")
-streets_names = gpd.read_file(folder + "/data" + "/TP_STR.shp")
+#streets_graph = gpd.read_file(folder + "/data" + "/EL_STR.shp")
+#streets_names = gpd.read_file(folder + "/data" + "/TP_STR.shp")
 civico = gpd.read_file(folder + "/data" + "/CIVICO.shp")
 
 # scrive sulla console il contenuto del file
@@ -21,7 +21,7 @@ civico = gpd.read_file(folder + "/data" + "/CIVICO.shp")
 
 pdb.set_trace()
 #streets_list = streets_names["TP_STR_NOM"].tolist()
-streets_list = civico["DENOMINAZI"].tolist()
+streets_list = civico["INDIRIZZO"].tolist()
 # removing one (or more) annoying none values
 streets_corrected = [street if street else "" for street in streets_list]
 
@@ -36,8 +36,9 @@ for i in range(len(matches)):
 which_one = int(input("Quale intendi? Scrivi il numero\n"))
 
 #pdb.set_trace()
-streets_coordinates1 = streets_names['CVE_COD_VI']
-streets_coordinates2 = streets_names['CVE_SCOD_V']
+# here we should change based if we use streets_names["TP_STR_NOM"] or civico["DENOMINAZI"]
+streets_coordinates1 = civico['CVE_COD_VI']
+streets_coordinates2 = civico['CVE_SCOD_V']
 #streets_coordinates = [streets_coordinates1, streets_coordinates2]
 coordinates = [streets_coordinates1[matches[which_one]], streets_coordinates2[matches[which_one]]]
 

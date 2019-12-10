@@ -48,67 +48,123 @@ if __name__ == '__main__':
             
             for linestring in polygon:
 
-                xs = np.asarray(linestring.coords.xy[0][:]).transpose()
-                ys = np.asarray(linestring.coords.xy[1][:]).transpose()
-                points[cp:cp+len(xs), 0] = xs
-                points[cp:cp+len(ys), 1] = ys
-                cp += len(xs)
-                pol_n += 1
-                indices_nodes = np.zeros((len(xs))).astype(int)
-                for i in range(len(xs)):
-                    candidate_node = [xs[i], ys[i]]
-                    alreadyThere = False
-                    finished = False
+                start = linestring.coords.xy[0][0], linestring.coords.xy[0][1]
+                end = linestring.coords.xy[-1][0], linestring.coords.xy[-1][1]
+                alreadyThere = False
+                finished = False
+                candidates = [start, end]
+                indices_nodes = np.zeros((2)).astype(int)
+                for k in range(len(candidates)):
+                    candidate_node = candidates[k]
                     while not (alreadyThere or finished):
                         for l in range(nn):
                             if (candidate_node[0] - points_as_nodes[l,0])**2 + (candidate_node[1] - points_as_nodes[l,1])**2 < 0.0001:
                                 alreadyThere = True
-                                indices_nodes[i] = l
+                                indices_nodes[k] = l
                         finished = True
                     if not alreadyThere:
                         points_as_nodes[nn,:] = candidate_node
-                        indices_nodes[i] = nn
+                        indices_nodes[k] = nn
                         nn += 1
 
-                    if i > 0:
+                    if k > 0:
                         #pdb.set_trace()
-                        weight = dist2d(points_as_nodes[indices_nodes[i-1]], points_as_nodes[indices_nodes[i]])
-                        weigh_edges[ne,:] = [indices_nodes[i-1], indices_nodes[i], weight]
+                        weight = dist2d(points_as_nodes[indices_nodes[k-1]], points_as_nodes[indices_nodes[k]])
+                        weigh_edges[ne,:] = [indices_nodes[k-1], indices_nodes[k], weight]
+            
+                # xs = np.asarray(linestring.coords.xy[0][:]).transpose()
+                # ys = np.asarray(linestring.coords.xy[1][:]).transpose()
+                # points[cp:cp+len(xs), 0] = xs
+                # points[cp:cp+len(ys), 1] = ys
+                # cp += len(xs)
+                # pol_n += 1
+                # indices_nodes = np.zeros((len(xs))).astype(int)
+                # for i in range(len(xs)):
+                #     candidate_node = [xs[i], ys[i]]
+                #     alreadyThere = False
+                #     finished = False
+                #     while not (alreadyThere or finished):
+                #         for l in range(nn):
+                #             if (candidate_node[0] - points_as_nodes[l,0])**2 + (candidate_node[1] - points_as_nodes[l,1])**2 < 0.0001:
+                #                 alreadyThere = True
+                #                 indices_nodes[i] = l
+                #         finished = True
+                #     if not alreadyThere:
+                #         points_as_nodes[nn,:] = candidate_node
+                #         indices_nodes[i] = nn
+                #         nn += 1
+
+                #     if i > 0:
+                #         #pdb.set_trace()
+                #         # lenght di shapely
+                #         weight = dist2d(points_as_nodes[indices_nodes[i-1]], points_as_nodes[indices_nodes[i]])
+                #         weigh_edges[ne,:] = [indices_nodes[i-1], indices_nodes[i], weight]
 
         elif type(polygon) == shapely.geometry.linestring.LineString:
 
             linestring = polygon
-            xs = np.asarray(linestring.coords.xy[0][:]).transpose()
-            ys = np.asarray(linestring.coords.xy[1][:]).transpose()
-            points[cp:cp+len(xs), 0] = xs
-            points[cp:cp+len(ys), 1] = ys
-            cp += len(xs)
-            pol_n += 1
-            indices_nodes = np.zeros((len(xs))).astype(int)
-            for i in range(len(xs)):
-                candidate_node = [xs[i], ys[i]]
-                alreadyThere = False
-                finished = False
+
+            start = linestring.coords.xy[0][0], linestring.coords.xy[0][1]
+            end = linestring.coords.xy[-1][0], linestring.coords.xy[-1][1]
+            alreadyThere = False
+            finished = False
+            candidates = [start, end]
+            indices_nodes = np.zeros((2)).astype(int)
+            for k in range(len(candidates)):
+                candidate_node = candidates[k]
                 while not (alreadyThere or finished):
                     for l in range(nn):
                         if (candidate_node[0] - points_as_nodes[l,0])**2 + (candidate_node[1] - points_as_nodes[l,1])**2 < 0.0001:
                             alreadyThere = True
-                            indices_nodes[i] = l
+                            indices_nodes[k] = l
                     finished = True
                 if not alreadyThere:
                     points_as_nodes[nn,:] = candidate_node
-                    indices_nodes[i] = nn
+                    indices_nodes[k] = nn
                     nn += 1
 
-                if i > 0:
+                if k > 0:
                     #pdb.set_trace()
-                    weight = dist2d(points_as_nodes[indices_nodes[i-1]], points_as_nodes[indices_nodes[i]])
-                    weigh_edges[ne,:] = [indices_nodes[i-1], indices_nodes[i], weight]
+                    weight = dist2d(points_as_nodes[indices_nodes[k-1]], points_as_nodes[indices_nodes[k]])
+                    weigh_edges[ne,:] = [indices_nodes[k-1], indices_nodes[k], weight]
             
         if cp > .9 * points.shape[0]:
             tmp = points[:cp,:]
             points = np.zeros((np.round(points.shape[0]*1.5).astype(int), 2))
             points[:cp, :] = tmp        
+        
+        #     linestring = polygon
+        #     xs = np.asarray(linestring.coords.xy[0][:]).transpose()
+        #     ys = np.asarray(linestring.coords.xy[1][:]).transpose()
+        #     points[cp:cp+len(xs), 0] = xs
+        #     points[cp:cp+len(ys), 1] = ys
+        #     cp += len(xs)
+        #     pol_n += 1
+        #     indices_nodes = np.zeros((len(xs))).astype(int)
+        #     for i in range(len(xs)):
+        #         candidate_node = [xs[i], ys[i]]
+        #         alreadyThere = False
+        #         finished = False
+        #         while not (alreadyThere or finished):
+        #             for l in range(nn):
+        #                 if (candidate_node[0] - points_as_nodes[l,0])**2 + (candidate_node[1] - points_as_nodes[l,1])**2 < 0.0001:
+        #                     alreadyThere = True
+        #                     indices_nodes[i] = l
+        #             finished = True
+        #         if not alreadyThere:
+        #             points_as_nodes[nn,:] = candidate_node
+        #             indices_nodes[i] = nn
+        #             nn += 1
+
+        #         if i > 0:
+        #             #pdb.set_trace()
+        #             weight = dist2d(points_as_nodes[indices_nodes[i-1]], points_as_nodes[indices_nodes[i]])
+        #             weigh_edges[ne,:] = [indices_nodes[i-1], indices_nodes[i], weight]
+            
+        # if cp > .9 * points.shape[0]:
+        #     tmp = points[:cp,:]
+        #     points = np.zeros((np.round(points.shape[0]*1.5).astype(int), 2))
+        #     points[:cp, :] = tmp        
         #print(streets_graph[column].head())
     pdb.set_trace()
     plt.scatter(points[:,0], points[:,1])
