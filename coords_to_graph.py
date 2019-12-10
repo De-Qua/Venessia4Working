@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
         #if pol_n > 25300:
         #    pdb.set_trace()
-        if pol_n % 10 == 0 and pol_n > 0:
+        if pol_n % 100 == 0 and pol_n > 0:
             print("converting the {}-th".format(pol_n))
         #print(polygon)
         #print(polygon.coords.xy)
@@ -53,15 +53,16 @@ if __name__ == '__main__':
                 alreadyThere = False
                 finished = False
                 candidates = [start, end]
+                pol_n += 1
                 indices_nodes = np.zeros((2)).astype(int)
+                #pdb.set_trace()
                 for k in range(len(candidates)):
                     candidate_node = candidates[k]
-                    while not (alreadyThere or finished):
-                        for l in range(nn):
-                            if (candidate_node[0] - points_as_nodes[l,0])**2 + (candidate_node[1] - points_as_nodes[l,1])**2 < 0.0001:
-                                alreadyThere = True
-                                indices_nodes[k] = l
-                        finished = True
+                    pdb.set_trace()
+                    array = np.unique(points_as_nodes[:,:]) - np.ones_like(points_as_nodes[:,:]) * candidate_node
+                    if abs(min(np.sum(array, axis=1))) < 0.001:
+                        alreadyThere = True
+                        indices_nodes[k] = np.argmin(np.sum(array, axis=1))
                     if not alreadyThere:
                         points_as_nodes[nn,:] = candidate_node
                         indices_nodes[k] = nn
@@ -104,20 +105,21 @@ if __name__ == '__main__':
 
             linestring = polygon
 
+            #pdb.set_trace()
             start = linestring.coords.xy[0][0], linestring.coords.xy[0][1]
             end = linestring.coords.xy[-1][0], linestring.coords.xy[-1][1]
             alreadyThere = False
             finished = False
             candidates = [start, end]
+            pol_n += 1
             indices_nodes = np.zeros((2)).astype(int)
             for k in range(len(candidates)):
                 candidate_node = candidates[k]
-                while not (alreadyThere or finished):
-                    for l in range(nn):
-                        if (candidate_node[0] - points_as_nodes[l,0])**2 + (candidate_node[1] - points_as_nodes[l,1])**2 < 0.0001:
-                            alreadyThere = True
-                            indices_nodes[k] = l
-                    finished = True
+                pdb.set_trace()
+                array = np.unique(points_as_nodes[:,:]) - np.ones_like(points_as_nodes[:,:]) * candidate_node
+                if abs(min(np.sum(array, axis=1))) < 0.001:
+                    alreadyThere = True
+                    indices_nodes[k] = np.argmin(np.sum(array, axis=1))
                 if not alreadyThere:
                     points_as_nodes[nn,:] = candidate_node
                     indices_nodes[k] = nn
