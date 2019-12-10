@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
         #if pol_n > 25300:
         #    pdb.set_trace()
-        if pol_n % 100 == 0 and pol_n > 0:
+        if pol_n % 10 == 0 and pol_n > 0:
             print("converting the {}-th".format(pol_n))
         #print(polygon)
         #print(polygon.coords.xy)
@@ -166,6 +166,8 @@ if __name__ == '__main__':
         #     points = np.zeros((np.round(points.shape[0]*1.5).astype(int), 2))
         #     points[:cp, :] = tmp        
         #print(streets_graph[column].head())
+    G = nx.graph()
+
     pdb.set_trace()
     plt.scatter(points[:,0], points[:,1])
     pdb.set_trace()
