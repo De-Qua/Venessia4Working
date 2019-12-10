@@ -2,3 +2,10 @@
 geopandas
 # to plot them
 descartes
+# graphs
+networkx
+# basic
+numpy
+matplotlib
+pdb
+
