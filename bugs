@@ -1,0 +1,3 @@
+## alcune strade sono indicate come un edge unico invece di due, e gli altri edge si collegano a metà. Quindi quando viene importato da networkx mancano alcuni collegamenti. Formalmente è corretto per networkx, l'errore è sullo shape file (cioè un arco da A a B a C è indicato come solo da A a C e l'altro arco da D a B e nel grafo non sono collegati ma nella realtà si.
+
+Esempio: vicino al ponte dell'accademia, nel file QUARTIERE.shp vicino ai node 127 e 281
