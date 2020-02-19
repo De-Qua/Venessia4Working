@@ -14,9 +14,9 @@ import networkx as nt
 plt.ion()
 
 folder = os.getcwd()
-ponti = gpd.read_file("/home/lucatastrophe/Desktop/venessia/Venessia4Working/zona_con_ponti/zona_22.shp")
+ponti = gpd.read_file("zona_con_ponti/zona_22.shp")
 
-G = nt.read_shp("/home/lucatastrophe/Desktop/venessia/Venessia4Working/zona_con_ponti/zona_22.shp")
+G = nt.read_shp("zona_con_ponti/zona_22.shp")
 #il file zona_22 è stato formattato con new_gpd_to_graph (aggiunti pesi e tolte colonne inutili)
 
 # se vogliamo accedere ai nodi con degli indici
