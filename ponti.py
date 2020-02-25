@@ -64,50 +64,47 @@ def weight_bridge(x,y,dic):
 #        w = 100
 #    else:
 #        w=0
-    return dic["length"] + dic["ponte"]*1
-
-path = nt.algorithms.shortest_paths.weighted.single_source_dijkstra(G_un, 890, 738, weight = weight_bridge)
-
-# lista dei nodi
-listadinodi = [G_un[n] for n in path[1]]
-# solo i numeri
-soloinumeri = [n for n in path[1]]
+    return dic["length"] + dic["ponte"]*2000
 
 
+def plot_short_path(start, end):
+    
+    path = nt.algorithms.shortest_paths.weighted.single_source_dijkstra(G_un, start, end, weight = weight_bridge)
 
-#libreria per convertire da Json a shapely
-from shapely.geometry import mapping, shape
-s = shape(json.loads(G_un[890][895]['Json']))
+    # lista dei nodi
+    listadinodi = [G_un[n] for n in path[1]]
+    # solo i numeri
+    soloinumeri = [n for n in path[1]]
+    # archi
+    nodo1 = [n for n in path[1][:-1]]
+    nodo2 = [n for n in path[1][1:]]
+    shapes = []
+    for i in range(len(soloinumeri)-1):
+        shapes.append(shape(json.loads(G_un[soloinumeri[i] ][soloinumeri[i+1] ]['Json'])))
+        #shapes = [shape(json.loads(G_un[a][b]['Json'])) for a,b in [nodo1, nodo2]]
 
-# archi
-nodo1 = [n for n in path[1][:-1]]
-nodo2 = [n for n in path[1][1:]]
-shapes = []
-for i in range(len(soloinumeri)-1):
-    shapes.append(shape(json.loads(G_un[soloinumeri[i] ][soloinumeri[i+1] ]['Json'])))
-#shapes = [shape(json.loads(G_un[a][b]['Json'])) for a,b in [nodo1, nodo2]]
+    #x_start = json.loads(G_un[path[1][0]][0]['Json'])
+    x_tot = []
+    for sha in shapes:
+        #   print(sha.coords.xy)
+        x = []
+        for i in range(len(sha.coords.xy[0])):
+            x.append((sha.coords.xy[0][i],sha.coords.xy[1][i]))
+            # to be corrected with x_start
+        if not x_tot:
+            x_tot+=x[::-1]
+        elif x[0] == x_tot[-1]:
+            #        print(x[0], "uguali",x_tot[-1])
+            x_tot+=x
+        else:
+            #        print(x[0],"diversi", x_tot[-1])
+            x_tot+=x[::-1]
 
-#x_start = json.loads(G_un[path[1][0]][0]['Json'])
-x_tot = []
-for sha in shapes:
-#   print(sha.coords.xy)
-    x = []
-    for i in range(len(sha.coords.xy[0])):
-        x.append((sha.coords.xy[0][i],sha.coords.xy[1][i]))
-    # to be corrected with x_start
-    if not x_tot:
-        x_tot+=x
-    elif x[0] == x_tot[-1]:
-#        print(x[0], "uguali",x_tot[-1])
-        x_tot+=x
-    else:
-#        print(x[0],"diversi", x_tot[-1])
-        x_tot+=x[::-1]
+    x_tot = np.asarray(x_tot)
 
-x_tot = np.asarray(x_tot)
-plt.figure()
-ponti.plot()
-plt.plot(x_tot[:,0], x_tot[:,1], c="r")
+    ponti.plot()
+    plt.plot(x_tot[:,0], x_tot[:,1], c="r")
+    return
 
 pos = nt.spring_layout(G_un)
 
