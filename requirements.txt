@@ -1,11 +1,20 @@
-# to read and understand shapefiles
-geopandas
-# to plot them
-descartes
-# graphs
-networkx
-# basic
-numpy
-matplotlib
-pdb
-
+GDAL==1.11.3
+geopandas==0.6.2
+gitdb2==2.0.6
+GitPython==3.0.5
+ipython==7.11.1
+ipython-genutils==0.2.0
+matplotlib==3.1.2
+meson==0.53.1
+networkx==2.4
+numpy==1.17.4
+ogr==0.9.0
+pandas==0.25.3
+Pillow==3.1.2
+pycurl==7.43.0
+PyGithub==1.45
+PyYAML==5.3
+scikit-learn==0.22
+scipy==1.4.1
+Shapely==1.6.4.post2
+sklearn==0.0
