@@ -1,4 +1,4 @@
-GDAL==1.5.0
+GDAL==1.11.3
 geopandas==0.6.2
 gitdb2==2.0.6
 GitPython==3.0.5
@@ -10,7 +10,6 @@ networkx==2.4
 numpy==1.17.4
 ogr==0.9.0
 pandas==0.25.3
-Pillow==3.1.2
 pycurl==7.43.0
 PyGithub==1.45
 PyYAML==5.3
