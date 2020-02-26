@@ -2,12 +2,10 @@ name: venezia
 channels:
   - conda-forge
 dependencies:
-  - python=3.5
   - matplotlib
   - geopandas
   - gdal
   - earthpy
-  - notebook==6.0.1
   - pandas
   - numpy
   - scikit-learn
