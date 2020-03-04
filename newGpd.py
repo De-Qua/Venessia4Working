@@ -1,4 +1,4 @@
-#questo script mi serve solo per selezionare le colonne che mi interessano del GeoDataFrame e salvarle in un nuovo file che contiene 2 strutture: indirizzo e coordinata; l'altra toponimo centroide . Inoltre deve salvare in numpy un array di nomi (sestieri e toponimi). 
+#questo script mi serve solo per selezionare le colonne che mi interessano del GeoDataFrame e salvarle in un nuovo file che contiene 2 strutture: indirizzo e coordinata; l'altra toponimo centroide . Inoltre deve salvare in numpy un array di nomi (sestieri e toponimi).
 
 # una libreria per leggere gli shapefile --> info qui: http://geopandas.org/index.html
 import geopandas as gpd
@@ -31,7 +31,7 @@ for ind in indirizzi:
 
 
 
-total = gpd.GeoDataFrame(data = zip(civico["CIVICO_NUM"], sestiere, civico["DENOMINAZI"], civico["geometry"]),lunghezza, ponte, columns = ["NUMERO","SESTIERE", "TOPONIMO", "geometry", "lunghezza", "ponte"])
+total = gpd.GeoDataFrame(data = zip(civico["CIVICO_NUM"], sestiere, civico["DENOMINAZI"], civico["geometry"]),lunghezza, ponte, columns = ["NUMERO", "SESTIERE", "TOPONIMO", "geometry", "lunghezza", "ponte"])
 #venezia_ind  = total["SESTIERE"].str.contains( "DORSODURO|CANNAREGIO|SAN POLO|^SAN MARCO|SANTA CROCE|CASTELLO") #aggiungere isole
 #total.index = venezia_ind
 #venezia = total.loc[True]
