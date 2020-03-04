@@ -115,8 +115,8 @@ arrangia il grafo e la lista dei nodi ricevendo come input il nome del file
 """
 def arrangiaTuttoDalloShapefile(shapefile_path):
 
-    G = nt.read_shp(shapefile_path)
-    G_un = G.to_undirected()
+    G_ = nt.read_shp(shapefile_path)
+    G = G_.to_undirected()
     G_list = list(G_un.nodes)
 
-    return G, G_un, G_list
+    return G_un, G_list
