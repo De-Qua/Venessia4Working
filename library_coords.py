@@ -61,7 +61,7 @@ def fintoMain():
         toponimo2coord()
 
 """
-trova il nome
+trova il nome da una lista
 """
 def checkNameFromList(lista, nome):
 
