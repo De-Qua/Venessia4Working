@@ -120,7 +120,7 @@ def toponimo2coord(coord_list,civico_name,gpd_toponimo):
     if streets_list[matches[0]] == civico_name.upper():
         which_one = 0
     else:
-        for i in range(len(lista_nomi_matches)):
+        for i in range(len(matches)):
             streets_founds.append(streets_list[matches[i]])
             print("Trovato: {}:{}".format(i, streets_founds[i]))
         which_one = int(input("Quale intendi? Scrivi il numero\n"))
@@ -144,7 +144,7 @@ def civico2coord(coord_list,civico_name,gpd_civico):
     if streets_list[matches[0]] == civico_name.upper():
         which_one = 0
     else:
-        for i in range(len(lista_nomi_matches)):
+        for i in range(len(matches)):
             streets_founds.append(streets_list[matches[i]])
             print("Trovato: {}:{}".format(i, streets_founds[i]))
         which_one = int(input("Quale intendi? Scrivi il numero\n"))
