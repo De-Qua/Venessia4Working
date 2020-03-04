@@ -61,19 +61,17 @@ def fintoMain():
         toponimo2coord()
 
 """
+trova il nome
 """
-def checkNomi():
+def checkNameFromList(lista, nome):
 
-    streets_list = gpd_toponimo["TP_STR_NOM"].tolist()
-    # removing one (or more) annoying none values
-    streets_corrected = [street if street else "" for street in streets_list]
-    matches = get_close_matches_indexes(civico_name.upper(), streets_corrected)
+    matches = get_close_matches_indexes(nome.upper(), lista)
     streets_founds = []
-    if streets_list[matches[0]] == civico_name.upper():
+    if streets_list[matches[0]] == nome.upper():
         which_one = 0
     else:
-        for i in range(len(lista_nomi_matches)):
-            streets_founds.append(streets_list[matches[i]])
+        for i in range(len(matches)):
+            streets_founds.append(lista[matches[i]])
             print("Trovato: {}:{}".format(i, streets_founds[i]))
         which_one = int(input("Quale intendi? Scrivi il numero\n"))
 
@@ -82,19 +80,32 @@ def checkNomi():
 
     return nomeCorretto, indiceCorretto
 
+
+"""
+controlla il nome e ritorna quello corertto!
+"""
+def checkNomi(nome, gdp_civico, gpd_toponimo):
+
+    if isCivico(nome):
+        lista_toponimi = gpd_civico["INDIRIZZO"].tolist()
+        nomeCorretto, indiceCorretto = checkNameFromList(nome, lista_toponimi)
+    else:
+        lista_civici = gpd_toponimo["TP_STR_NOM"].tolist()
+        nomeCorretto, indiceCorretto = checkNameFromList(nome, lista_civici)
+
+    return nomeCorretto, indiceCorretto
+
 """
 ritorna una coordinata (x,y), che e anche la stringa di accesso a un nodo
 prende in input il nome corretto!
 """
-def nome2coord(coord_list,indiceCorretto):
+def nome2coord(coord_list, nome, lista_toponimi):
     coordinate = np.asarray(coord_list)
     coord = gpd_civico['geometry'][indiceCorretto]
     coord_centroid = coord.centroid.bounds[0:2]
     tmp = np.subtract(np.ones((coordinate.shape)) * coord_centroid, coordinate)
     idx = np.argmin(np.sum(tmp * tmp, axis=1))
     return (coordinate[0], coordinate[1])
-
-
 
 """
 da toponimo, ritorna una coordinata (x,y), che e anche la stringa di accesso a un nodo
@@ -114,7 +125,7 @@ def toponimo2coord(coord_list,civico_name,gpd_toponimo):
             print("Trovato: {}:{}".format(i, streets_founds[i]))
         which_one = int(input("Quale intendi? Scrivi il numero\n"))
 
-    coord = civico['geometry'][matches[which_one]]
+    coord = gpd_toponimo['geometry'][matches[which_one]]
     coord_centroid = coord.centroid.bounds[0:2]
     tmp = np.subtract(np.ones((coordinate.shape)) * coord_centroid, coordinate)
     idx = np.argmin(np.sum(tmp * tmp, axis=1))
