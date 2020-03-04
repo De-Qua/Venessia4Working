@@ -153,7 +153,7 @@ def civico2coord(coord_list,civico_name,gpd_civico):
     coord_centroid = coord.centroid.bounds[0:2]
     tmp = np.subtract(np.ones((coordinate.shape)) * coord_centroid, coordinate)
     idx = np.argmin(np.sum(tmp * tmp, axis=1))
-    return (coordinate[0], coordinate[1])
+    return (coordinate[idx][0], coordinate[idx][1])
 
 """
 arrangia il grafo e la lista dei nodi ricevendo come input il nome del file

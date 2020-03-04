@@ -18,7 +18,7 @@ import json
 #libreria per convertire da Json a shapely
 from shapely.geometry import mapping, shape
 #utility per coordinates
-from utility_coords import civico2coord
+from library_coords import civico2coord
 # %% codecell
 plt.ion()
 
@@ -94,8 +94,11 @@ def plot_shortest_path(path_nodes,map_shp):
 civico = gpd.read_file(folder + "/data" + "/CIVICO.shp")
 try:
     starting_address = input('Da dove parti?\n')
+    coord = civico2coord(G_list, starting_address, civico)
+    coord2 = civico2coord(G_list, "santa croce, 343", civico)
     # Dijkstra algorithm, funzione peso lunghezza
-    path = nt.algorithms.shortest_paths.weighted.dijkstra_path(G_un,G_list[890],G_list[207], weight="length")
+    G_un[coord]
+    path = nt.algorithms.shortest_paths.weighted.dijkstra_path(G_un,coord,coord2, weight="length")
     # lista dei nodi attraversati
     path_nodes = [n for n in path]
     plot_shortest_path(path_nodes,ponti)
@@ -105,10 +108,11 @@ except NetworkXNoPath:
 # %% codecell
 # Dijkstra algorithm, funzione peso ponti
 try:
-    path_nobridges = nt.algorithms.shortest_paths.weighted.single_source_dijkstra(G_un, G_list[890],G_list[207], weight = weight_bridge)
+    path_nobridges = nt.algorithms.shortest_paths.weighted.single_source_dijkstra(G_un, coord,coord2, weight = weight_bridge)
     # lista dei nodi attraversati
     path_nodes_nobridges = [n for n in path_nobridges[1]]
     plot_shortest_path(path_nodes_nobridges,ponti)
+    print(path_nobridges[0])
 except NetworkXNoPath:
     print("Non esiste un percorso tra i due nodi")
     ponti.plot()
