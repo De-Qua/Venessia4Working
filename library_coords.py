@@ -59,8 +59,7 @@ def fintoMain():
         civico2coord()
     else:
         toponimo2coord()
-
-def matchaIlNome(name, str):
+    
 
 """
 da toponimo, ritorna una coordinata (x,y), che e anche la stringa di accesso a un nodo
