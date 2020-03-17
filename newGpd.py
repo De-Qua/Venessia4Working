@@ -31,12 +31,12 @@ elstr_ponti.columns
 #         sestiere.append(None)
 #     else:
 #         sestiere.append(ind.translate(trantab))
+lunghezza = small_shp['geometry'].length
 ponte = [1 if x else 0 for x in elstr_ponti["PONTE_TY"]]
-new_ponti = gpd.GeoDataFrame(data = zip(elstr_ponti["geometry"],ponte), columns = ["geometry", "ponte"])
+new_ponti = gpd.GeoDataFrame(data = zip(elstr_ponti["geometry"],ponte, lunghezza), columns = ["geometry", "ponte", "length"])
 
 # TOPLEFT: 2309038, 5036386
 # BOTTOMRIGHT: 2314037, 5033256
-asdas
 centroids = new_ponti["geometry"].centroid
 centroids_as_points = [(centroid.x, centroid.y) for centroid in centroids]
 centroids_as_points_in_array = np.asarray(centroids_as_points)
