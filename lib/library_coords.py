@@ -1,4 +1,4 @@
-from mydifflib import get_close_matches_indexes
+from lib.mydifflib import get_close_matches_indexes
 import networkx as nt
 import numpy as np
 
