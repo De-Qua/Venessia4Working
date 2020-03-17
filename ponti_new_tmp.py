@@ -20,12 +20,11 @@ from shapely.geometry import mapping, shape
 #utility per coordinates
 from library_coords import civico2coord
 # %% codecell
-plt.ion()
 
 folder = os.getcwd()
-ponti = gpd.read_file(folder+"/pontiDivisi_completo/pontiDivisi_solo_venezia.shp")
+ponti = gpd.read_file(folder+"/pontiDivisi_completo/pontiDivisi_solo_venezia_l.shp")
 
-G = nt.read_shp(folder + "/pontiDivisi_completo/pontiDivisi_solo_venezia.shp")
+G = nt.read_shp(folder + "/pontiDivisi_completo/pontiDivisi_solo_venezia_l.shp")
 #il file zona_22 è stato formattato con new_gpd_to_graph (aggiunti pesi e tolte colonne inutili)
 
 # se vogliamo accedere ai nodi con degli indici
@@ -37,7 +36,7 @@ G_un = G.to_undirected()
 G_list = list(G_un.nodes)
 
 # disegna il grafo le coordinate sono a caso
-nt.draw(G_un)
+#nt.draw(G_un)
 
 # %% codecell
 # Plot the shape file
@@ -46,7 +45,7 @@ ponti.plot()
 # %% codecell
 # crea un dizionario con la corrispondenza nodo-coordinata (se uso grafo senza indici il nodo è identificato proprio dalla coordinata. Viene fuori coordinata:coordinata
 pos = dict(zip([v for v in G_un.nodes()], [f for f in G.nodes()]))
-nt.draw_networkx(G_un, pos, node_size = 40, node_color = "y", edge_color = "y", font_size = 8)
+#nt.draw_networkx(G_un, pos, node_size = 40, node_color = "y", edge_color = "y", font_size = 8)
 
 
 # %% codecell
@@ -91,7 +90,9 @@ def plot_shortest_path(path_nodes,map_shp):
     plt.plot(x_tot[:,0], x_tot[:,1], c="r")
     return
 # %% codecell
+# Read file civico
 civico = gpd.read_file(folder + "/data" + "/CIVICO.shp")
+# %% codecell
 try:
     starting_address = input('Da dove parti?\n')
     coord = civico2coord(G_list, starting_address, civico)
@@ -102,17 +103,24 @@ try:
     # lista dei nodi attraversati
     path_nodes = [n for n in path]
     plot_shortest_path(path_nodes,ponti)
+    plt.xlim(min(coord[0], coord2[0]) - 100, max(coord[0], coord2[0]) + 100)
+    plt.ylim(min(coord[1], coord2[1]) - 100, max(coord[1], coord2[1]) + 100)
 except NetworkXNoPath:
     print("Non esiste un percorso tra i due nodi")
     ponti.plot()
 # %% codecell
 # Dijkstra algorithm, funzione peso ponti
 try:
-    path_nobridges = nt.algorithms.shortest_paths.weighted.single_source_dijkstra(G_un, coord,coord2, weight = weight_bridge)
+    length_path, path_nobridges = nt.algorithms.shortest_paths.weighted.single_source_dijkstra(G_un, coord,coord2, weight = weight_bridge)
     # lista dei nodi attraversati
-    path_nodes_nobridges = [n for n in path_nobridges[1]]
+    path_nodes_nobridges = [n for n in path_nobridges
     plot_shortest_path(path_nodes_nobridges,ponti)
-    print(path_nobridges[0])
+    plt.xlim(min(coord[0], coord2[0]) - 100, max(coord[0], coord2[0]) + 100)
+    plt.ylim(min(coord[1], coord2[1]) - 100, max(coord[1], coord2[1]) + 100)
+    print(length_path)
 except NetworkXNoPath:
     print("Non esiste un percorso tra i due nodi")
     ponti.plot()
+
+coord
+coord2
