@@ -23,9 +23,9 @@ from library_coords import civico2coord
 plt.ion()
 
 folder = os.getcwd()
-ponti = gpd.read_file("zona_con_ponti/zona_22.shp")
+ponti = gpd.read_file("/pontiDivisi_completo/pontiDivisi_solo_venezia.shp")
 
-G = nt.read_shp("zona_con_ponti/zona_22.shp")
+G = nt.read_shp(folder + "/pontiDivisi_completo/pontiDivisi_solo_venezia.shp")
 #il file zona_22 è stato formattato con new_gpd_to_graph (aggiunti pesi e tolte colonne inutili)
 
 # se vogliamo accedere ai nodi con degli indici
