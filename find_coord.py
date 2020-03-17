@@ -1,1 +1,0 @@
-# questa funzione prende in input l'indirizzo esatto, se c'è il civico ne restituisce la coordinata (quella sulla strada oppure no?), altrimenti deve prendere il centroide del toponimo (TP_STR.shp)... Meglio che acceda ad gpd con solo i centroidi, oppure non cambia niente?
