@@ -139,7 +139,8 @@ def civico2coord(coord_list,civico_name,gpd_civico):
     streets_list = gpd_civico["INDIRIZZO"].tolist()
     # removing one (or more) annoying none values
     streets_corrected = [street if street else "" for street in streets_list]
-    matches = get_close_matches_indexes(civico_name.upper(), streets_corrected)
+    option_number = 1
+    matches = get_close_matches_indexes(civico_name.upper(), streets_corrected, option_number)
     streets_founds = []
     if streets_list[matches[0]] == civico_name.upper():
         which_one = 0
