@@ -1,0 +1,11 @@
+# %% codecell
+# weight_bridge come funzione peso
+def weight_bridge(x,y,dic):
+#    if dic["altezza"]< 110:
+#        w = 100
+#    else:
+#        w=0
+    return dic["length"] + dic["ponte"]*100
+    #weight = dic["length"] if dic["ponte"]==0 else None
+ #   return weight
+
