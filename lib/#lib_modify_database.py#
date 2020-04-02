@@ -52,8 +52,8 @@ TP_coord_full = np.reshape((TP_coord_full), (2, np.round(TP_coord_full.shape[0]/
 TP_coord_full = np.transpose(array_full)
 plt.scatter(TP_coord_full[:,0], TP_coord_full[:,1])
 
-np.savetxt(folder + "/lista_toponimi_csv.txt", toponimi, fmt='%s,')
-np.savetxt(folder + "/lista_coords_csv.txt", array_t, fmt='%8.8f, %8.8f')
+np.savetxt(folder + "/lista_TP_csv.txt", TP_names_venezia, fmt='%s,')
+np.savetxt(folder + "/lista_TP_coords_csv.txt", TP_coord_full, fmt='%8.8f, %8.8f')
 #civico = gpd.read_file("/home/lucatastrophe/Desktop/venessia/Venessia4Working/data/Tema0301_ToponimiNumeriCivici/CIVICO.shp")
 
 # trantab = {ord("0"):None,ord("1"):None,ord("2"):None,ord("3"):None,ord("4"):None,ord("5"):None,ord("6"):None,ord("7"):None,ord("8"):None,ord("9"):None,ord(","):None}
