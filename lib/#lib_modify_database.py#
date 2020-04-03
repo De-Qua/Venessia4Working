@@ -68,8 +68,17 @@ np.savetxt(folder + "/lista_TP_coords_csv.txt", TP_coord_full, fmt='%8.8f, %8.8f
 ##### salva in pickle il gpd finale
 
 import networkx as nt
+import pickle
+
 G = nt.read_shp(folder + "/../databases/stavolta_sono_giusto.shp")
 G_un = G.to_undirected()
+
+file = open('grafo_pickle', 'wb') 
+pickle.dump(G_un, file)
+file.close()
+
+
+
 #civico = gpd.read_file("/home/lucatastrophe/Desktop/venessia/Venessia4Working/data/Tema0301_ToponimiNumeriCivici/CIVICO.shp")
 
 # trantab = {ord("0"):None,ord("1"):None,ord("2"):None,ord("3"):None,ord("4"):None,ord("5"):None,ord("6"):None,ord("7"):None,ord("8"):None,ord("9"):None,ord(","):None}

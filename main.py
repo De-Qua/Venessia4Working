@@ -8,6 +8,7 @@ import numpy as np
 #utility per coordinates
 import sys
 sys.path.append("/home/lucatastrophe/Desktop/venessia/Venessia4Working/lib")
+sys.path.append("/home/lucatastrophe/Desktop/venessia/Venessia4Working/txt")
 from library_coords import civico2coord
 from weights_libs import weight_bridge
 
