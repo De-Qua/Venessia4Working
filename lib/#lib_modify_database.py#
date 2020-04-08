@@ -60,8 +60,8 @@ coord_full = np.reshape((coord_full), (2, np.round(coord_full.shape[0]/2).astype
 coord_full = np.transpose(coord_full)
 #plt.scatter(coord_full[:,0], coord_full[:,1])
 
-names_venezia = [civico.replace(', ', ' ') if civico else "NOMEFALSO, 11" for civico in names_venezia]
 # salvataggio
+names_venezia= [names_venezia.replace(', ', ' ') if civico else "NOMEFALSO, 11" for civico in names_venezia]
 np.savetxt(folder + "/../txt/lista_key.txt", names_venezia, fmt='%s,')
 np.savetxt(folder + "/../txt/lista_coords.txt", coord_full, fmt='%8.8f, %8.8f')
 
