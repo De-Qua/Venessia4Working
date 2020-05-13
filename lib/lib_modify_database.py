@@ -65,7 +65,7 @@ names_venezia = [civico.replace(', ', ' ') if civico else "NOMEFALSO, 11" for ci
 np.savetxt(folder + "/../txt/lista_key.txt", names_venezia, fmt='%s,')
 np.savetxt(folder + "/../txt/lista_coords.txt", coord_full, fmt='%8.8f, %8.8f')
 
-##### salva in pickle il gpd finale
+##### salva in pickle il gpd finale (strade). SHP deve già essere om WSG4
 import networkx as nt
 import pickle
 
@@ -76,5 +76,22 @@ file = open('grafo_pickle', 'wb')
 pickle.dump(G_un, file)
 file.close()
 
+##### salva in pickle il gpd finale (acqua). SHP deve già essere om WSG4
+
+acqua = gpd.read_file(folder + "/../databases/acqua_WGS.shp")
+lunghezza = acqua['geometry'].length
+vel_max=acqua['VEL_MAX']
+solo_remi=[1 if i=='Rio Blu' else 0 for i in acqua['BARCHE_A_R']]
+# normativa: to be done
+# c'è anche la stazza, ma per il momento non ci interessa (10t)
+larghezza=acqua['LARGHEZZA_']
+senso_unico=acqua['ONEWAY']
+total = gpd.GeoDataFrame(data = zip(lunghezza, vel_max, solo_remi, larghezza, senso_unico, acqua["geometry"]), columns = ["length","vel_max", "solo_remi", "larghezza", "senso_unico", "geometry"])
+total.to_file(folder + "/../databases/acqua_WGS_clean.shp")
 
 
+G = nt.read_shp(folder + "/../databases/acqua_WGS_clean.shp")
+G_un = G.to_undirected()
+file = open('grafo_acqueo_pickle', 'wb') 
+pickle.dump(G_un, file)
+file.close()
