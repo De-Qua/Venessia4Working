@@ -8,8 +8,6 @@ import pdb
 import numpy as np
 # per le cartelle
 import os
-# metodo per avere gli indici delle vie o della via trovata
-from mydifflib import get_close_matches_indexes
 
 # limiti di venezia in epsg3004
 #x1 2309038 x2 2314037 y1 5033256 y2 5036386
@@ -69,10 +67,19 @@ np.savetxt(folder + "/../txt/lista_coords.txt", coord_full, fmt='%8.8f, %8.8f')
 import networkx as nt
 import pickle
 
-G = nt.read_shp(folder + "/../databases/stavolta_sono_giusto.shp")
+streets = gpd.read_file(folder + "/../databases/venezia_isole_ponti_civici.shp")
+lunghezza = streets['geometry'].length
+ponte=[]
+for bridge in streets["PONTE_CP"]:
+    ponte.append(1 if bridge=="02" else 0)
+
+total = gpd.GeoDataFrame(data = zip(lunghezza, ponte, streets["geometry"]), columns = ["length","ponte", "geometry"])
+total.to_file(folder + "/../databases/venezia_isole_ponti_civici_mod.shp")
+
+G = nt.read_shp(folder + "/../databases/venezia_isole_ponti_civici_mod.shp")
 G_un = G.to_undirected()
 
-file = open('grafo_pickle', 'wb') 
+file = open(folder+"/../databases/grafo_pickle_last", 'wb') 
 pickle.dump(G_un, file)
 file.close()
 
