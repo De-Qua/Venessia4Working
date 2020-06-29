@@ -31,7 +31,9 @@ civico_centroids = civico["geometry"].centroid
 cx = [centroid.x if centroid else 0. for centroid in civico_centroids]
 cy = [centroid.y if centroid else 0. for centroid in civico_centroids]
 
-TP = TP.to_crs(epsg=4326)
+EPSG3004_Venezia = 'PROJCS["unnamed",GEOGCS["International 1909 (Hayford)",DATUM["unknown",SPHEROID["intl",6378388,297],TOWGS84[-130.5633,-29.2694,-6.12,-1.05572,-2.6951,-2.28808,-16.9352]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central_meridian",15],PARAMETER["scale_factor",0.9996],PARAMETER["false_easting",2520000],PARAMETER["false_northing",0],UNIT["Meter",1]]'
+
+TP = TP.to_crs(EPSG3004_Venezia)
 TP_centroids = TP["geometry"].centroid
 cx_TP = [centroid.x if centroid else 0. for centroid in TP_centroids]
 cy_TP = [centroid.y if centroid else 0. for centroid in TP_centroids]
@@ -67,7 +69,13 @@ np.savetxt(folder + "/../txt/lista_coords.txt", coord_full, fmt='%8.8f, %8.8f')
 import networkx as nt
 import pickle
 
+# il file shp è stato creato in epsg3004 ma convertito in epsg4326 utilizzando conversione standard
 streets = gpd.read_file(folder + "/../databases/venezia_isole_ponti_civici.shp")
+# riconvertiamo a 3004
+
+streets = streets.to_crs(epsg=3004)
+# convertiamo alle coordinate modificate ottimizzate per venezia
+streets = streets.to_crs(EPSG3004_Venezia)
 lunghezza = streets['geometry'].length
 ponte=[]
 for bridge in streets["PONTE_CP"]:
@@ -79,7 +87,7 @@ total.to_file(folder + "/../databases/venezia_isole_ponti_civici_mod.shp")
 G = nt.read_shp(folder + "/../databases/venezia_isole_ponti_civici_mod.shp")
 G_un = G.to_undirected()
 
-file = open(folder+"/../databases/grafo_pickle_last", 'wb') 
+file = open(folder+"/../databases/grafo_pickle_last", 'wb')
 pickle.dump(G_un, file)
 file.close()
 
@@ -99,6 +107,6 @@ total.to_file(folder + "/../databases/acqua_WGS_clean.shp")
 
 G = nt.read_shp(folder + "/../databases/acqua_WGS_clean.shp")
 G_un = G.to_undirected()
-file = open('grafo_acqueo_pickle', 'wb') 
+file = open('grafo_acqueo_pickle', 'wb')
 pickle.dump(G_un, file)
 file.close()
