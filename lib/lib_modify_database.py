@@ -65,36 +65,53 @@ names_venezia = [civico.replace(', ', ' ') if civico else "NOMEFALSO, 11" for ci
 np.savetxt(folder + "/../txt/lista_key.txt", names_venezia, fmt='%s,')
 np.savetxt(folder + "/../txt/lista_coords.txt", coord_full, fmt='%8.8f, %8.8f')
 
+#%% Import graph land
 ##### salva in pickle il gpd finale (strade). SHP deve già essere om WSG4
+import geopandas as gpd
 import networkx as nt
 import pickle
+from lib_func_import import lines_length
+import os
 
+folder = os.getcwd()
 # il file shp è stato creato in epsg3004 ma convertito in epsg4326 utilizzando conversione standard
-streets = gpd.read_file(folder + "/../databases/venezia_isole_ponti_civici.shp")
-# riconvertiamo a 3004
+shp_land = "/../databases/venezia_isole_ponti_civici_4326VE.shp"
+streets = gpd.read_file(folder + shp_land)
+# # riconvertiamo a 3004
+#
+# streets = streets.to_crs(epsg=3004)
+# # convertiamo alle coordinate modificate ottimizzate per venezia
+# streets = streets.to_crs(EPSG3004_Venezia)
+# lunghezza = streets['geometry'].length
 
-streets = streets.to_crs(epsg=3004)
-# convertiamo alle coordinate modificate ottimizzate per venezia
-streets = streets.to_crs(EPSG3004_Venezia)
-lunghezza = streets['geometry'].length
+# calcola lunghezze delle linestring utilizzando un metodo bello
+lunghezza = lines_length(streets['geometry'])
 ponte=[]
 for bridge in streets["PONTE_CP"]:
     ponte.append(1 if bridge=="02" else 0)
+# crea nuovo dataframe con solo colonne interessanti
+total = gpd.GeoDataFrame(data = zip(lunghezza, ponte, streets["geometry"],streets['CVE_SUB_CO'],streets['VEL_MAX']), columns = ["length","ponte", "geometry","street_id","vel_max"])
+# salva nuovo dataframe in shp
+new_shp_name = "/../databases/venezia_isole_ponti_civici_4326VE_gpd.shp"
+total.to_file(folder + new_shp_name)
 
-total = gpd.GeoDataFrame(data = zip(lunghezza, ponte, streets["geometry"]), columns = ["length","ponte", "geometry"])
-total.to_file(folder + "/../databases/venezia_isole_ponti_civici_mod.shp")
-
-G = nt.read_shp(folder + "/../databases/venezia_isole_ponti_civici_mod.shp")
+# ricarica lo shapefile in networkx come grafo
+G = nt.read_shp(folder + new_shp_name)
+# rendi grafo undirected
 G_un = G.to_undirected()
 
-file = open(folder+"/../databases/grafo_pickle_last", 'wb')
-pickle.dump(G_un, file)
-file.close()
+# salva il grafo come pickle
+pickle_name = "/../databases/grafo_pickle_4326VE"
+with open(folder+pickle_name, 'wb') as file:
+    pickle.dump(G_un, file)
+
+#%% Import graph water
 
 ##### salva in pickle il gpd finale (acqua). SHP deve già essere om WSG4
-
-acqua = gpd.read_file(folder + "/../databases/acqua_WGS.shp")
-lunghezza = acqua['geometry'].length
+shp_water = "/../databases/acqua_WGS_4326VE.shp"
+acqua = gpd.read_file(folder + shp_water)
+# calcola lunghezze linestring
+lunghezza = lines_length(acqua['geometry'])
 vel_max=acqua['VEL_MAX']
 solo_remi=[1 if i=='Rio Blu' else 0 for i in acqua['BARCHE_A_R']]
 # normativa: to be done
@@ -102,11 +119,12 @@ solo_remi=[1 if i=='Rio Blu' else 0 for i in acqua['BARCHE_A_R']]
 larghezza=acqua['LARGHEZZA_']
 senso_unico=acqua['ONEWAY']
 total = gpd.GeoDataFrame(data = zip(lunghezza, vel_max, solo_remi, larghezza, senso_unico, acqua["geometry"]), columns = ["length","vel_max", "solo_remi", "larghezza", "senso_unico", "geometry"])
-total.to_file(folder + "/../databases/acqua_WGS_clean.shp")
+new_shp_name = "/../databases/acqua_WGS_4326VE_gpd.shp"
+total.to_file(folder + new_shp_name)
 
 
-G = nt.read_shp(folder + "/../databases/acqua_WGS_clean.shp")
+G = nt.read_shp(folder + new_shp_name)
 G_un = G.to_undirected()
-file = open('grafo_acqueo_pickle', 'wb')
-pickle.dump(G_un, file)
-file.close()
+pickle_name = "/../databases/grafo_acqueo_pickle_4326VE"
+with open(folder+pickle_name, 'wb') as file:
+    pickle.dump(G_un, file)
