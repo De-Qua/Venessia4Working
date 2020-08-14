@@ -17,12 +17,13 @@ if __name__ == "__main__":
     print("******************************************\n")
 
     folder = "/Users/Palma/Documents/Projects/Venessia4Working/Venessia4Working/data" #os.getcwd()
-
+    shp_relative_path = "dequa_ve_acqua_v4.shp"
+    
     if len(sys.argv) > 1:
         print("great, path is gien as {}\nThanks".format(sys.argv[1]))
-        shp_path = sys.argv[1]
+        shp_path = os.path.join(sys.argv[1], shp_relative_path)
     else:
-        shp_relative_path = "dequa_ve_acqua_v4.shp"
+
         shp_path = os.path.join(folder, shp_relative_path)
         print("no path given, we use hard-coded one, which now is: {}".format(shp_path))
 
@@ -35,12 +36,14 @@ if __name__ == "__main__":
     # normativa: to be done
     # c'è anche la stazza, ma per il momento non ci interessa (10t)
     vel_max=shp_gpd['VEL_MAX']
+    vel_max_mp=shp_gpd['VEL_MAX_MP']
     larghezza=shp_gpd['LARGHEZZA_']
-    senso_unico=acqua['ONEWAY'][:]
+    senso_unico=shp_gpd['ONEWAY'][:]
     
     lista_sensi_inversi=["DE SAN LUCA - ROSSINI", "DE PALAZZO - CANONICA", "DE LA FAVA","DE LA PIETA'  - SANT'ANTONIN","DE SAN GIUSEPPE", "DE LA TETA - SAN GIOVANNI LATERANO RAMO BASSO", "DE SAN GIACOMO DALL'ORIO","DE SAN VIO"]
+    lista_limiti_sette=["CANAL GRANDE","DE CANNAREGIO"]
     noal_passed=False
-    for index,canal in acqua.iterrows():
+    for index,canal in shp_gpd.iterrows():
     
         if canal['TC_DENOM']=="DEI FUSERI":
             print('aggiungo senso unico al rio dei fuseri')
@@ -52,18 +55,25 @@ if __name__ == "__main__":
             print('aggiungo senso unico al rio di ca foscari')
             senso_unico[index]=1
         if canal['ONEWAY'] is not None:
-         
+            
             if canal['TC_DENOM'] in lista_sensi_inversi:
                 print('cambiato verso di ', canal['TC_DENOM'])
                 senso_unico[index]=-1          
             else:
                 senso_unico[index]=1
             #if canal['TC_DENOM'] in ["DE CA' FOSCARI", "NOVO"]:
-            #   orario[index]=(0,12)
+            #    orario_senso[index]=(0,12)
             #if canal['TC_DENOM']=="DEI VETRAI":
-            #orario[index]=(8,14) #solo feriali
-        
-    total = gpd.GeoDataFrame(data = zip(lunghezza, vel_max, solo_remi, larghezza, senso_unico, acqua["TC_DENOM"],acqua["geometry"]), columns = ["length","vel_max", "solo_remi", "larghezza", "senso_unico", "nome","geometry"])
+            #    orario_senso[index]=(8,14) #solo feriali
+        if canal['TC_DENOM'] in lista_limiti_sette:
+            print('cambio limite di velocita nel ', canal['TC_DENOM'])
+            vel_max[index]=7
+            vel_max_mp[index]=11
+        if canal['TC_DENOM']=="SAN CRISTOFORO":
+            print('modifico limite di velocita canale di san cristoforo')
+            vel_max[index]=11
+            
+    total = gpd.GeoDataFrame(data = zip(lunghezza, vel_max, vel_max_mp, solo_remi, larghezza, senso_unico, shp_gpd["TC_DENOM"],shp_gpd["geometry"]), columns = ["length","vel_max", "solo_remi", "larghezza", "senso_unico", "nome","geometry"])
 
     today = datetime.datetime.today().strftime ('%d%m')
 

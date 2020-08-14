@@ -6,6 +6,7 @@ from lib.lib_func_import import lines_length
 import os
 import sys
 import datetime
+import pdb
 
 if __name__ == "__main__":
 
@@ -16,12 +17,13 @@ if __name__ == "__main__":
     print("******************************************\n")
 
     folder = "/Users/Palma/Documents/Projects/Venessia4Working/Venessia4Working/data" #os.getcwd()
-
+    shp_relative_path = "dequa_ve_terra_v7.shp"
+    
     if len(sys.argv) > 1:
         print("great, path is gien as {}\nThanks".format(sys.argv[1]))
-        shp_path = sys.argv[1]
+        shp_path = os.path.join(sys.argv[1], shp_relative_path)
     else:
-        shp_relative_path = "dequa_ve_terra_v4.shp"
+        
         shp_path = os.path.join(folder, shp_relative_path)
         print("no path given, we use hard-coded one, which now is: {}".format(shp_path))
 
@@ -36,6 +38,7 @@ if __name__ == "__main__":
 
     print("creating a new dataframe only with the data we need..")
     # crea nuovo dataframe con solo colonne interessanti
+    pdb.set_trace()
     total = gpd.GeoDataFrame(data = zip(lunghezza, ponte, streets["geometry"],streets['CVE_SUB_CO'],streets['VEL_MAX']), columns = ["length","ponte", "geometry","street_id","vel_max"])
 
     today = datetime.datetime.today().strftime ('%d%m')
