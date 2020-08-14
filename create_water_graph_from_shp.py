@@ -35,13 +35,13 @@ if __name__ == "__main__":
     solo_remi=[1 if i=='Rio Blu' else 0 for i in shp_gpd['BARCHE_A_R']]
     # normativa: to be done
     # c'è anche la stazza, ma per il momento non ci interessa (10t)
-    vel_max=shp_gpd['VEL_MAX']
-    vel_max_mp=shp_gpd['VEL_MAX_MP']
+    vel_max=shp_gpd['VEL_MAX'][:]
+    vel_max_mp=shp_gpd['VEL_MAX_MP'][:]
     larghezza=shp_gpd['LARGHEZZA_']
     senso_unico=shp_gpd['ONEWAY'][:]
     
     lista_sensi_inversi=["DE SAN LUCA - ROSSINI", "DE PALAZZO - CANONICA", "DE LA FAVA","DE LA PIETA'  - SANT'ANTONIN","DE SAN GIUSEPPE", "DE LA TETA - SAN GIOVANNI LATERANO RAMO BASSO", "DE SAN GIACOMO DALL'ORIO","DE SAN VIO"]
-    lista_limiti_sette=["CANAL GRANDE","DE CANNAREGIO"]
+    lista_limiti_sette=["GRANDE","DE CANNAREGIO"]
     noal_passed=False
     for index,canal in shp_gpd.iterrows():
     
@@ -73,7 +73,7 @@ if __name__ == "__main__":
             print('modifico limite di velocita canale di san cristoforo')
             vel_max[index]=11
             
-    total = gpd.GeoDataFrame(data = zip(lunghezza, vel_max, vel_max_mp, solo_remi, larghezza, senso_unico, shp_gpd["TC_DENOM"],shp_gpd["geometry"]), columns = ["length","vel_max", "solo_remi", "larghezza", "senso_unico", "nome","geometry"])
+    total = gpd.GeoDataFrame(data = zip(lunghezza, vel_max, vel_max_mp, solo_remi, larghezza, senso_unico, shp_gpd["TC_DENOM"],shp_gpd["geometry"]), columns = ["length","vel_max", "vel_max_mp", "solo_remi", "larghezza", "senso_unico", "nome","geometry"])
 
     today = datetime.datetime.today().strftime ('%d%m')
 
