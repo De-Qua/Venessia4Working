@@ -36,11 +36,34 @@ if __name__ == "__main__":
     # c'è anche la stazza, ma per il momento non ci interessa (10t)
     vel_max=shp_gpd['VEL_MAX']
     larghezza=shp_gpd['LARGHEZZA_']
-    senso_unico=shp_gpd['ONEWAY']
-
-    print("creating a new dataframe only with the data we need..")
-    # crea nuovo dataframe con solo colonne interessanti
-    total = gpd.GeoDataFrame(data = zip(lunghezza, vel_max, solo_remi, larghezza, senso_unico, shp_gpd["geometry"]), columns = ["length","vel_max", "solo_remi", "larghezza", "senso_unico", "geometry"])
+    senso_unico=acqua['ONEWAY'][:]
+    
+    lista_sensi_inversi=["DE SAN LUCA - ROSSINI", "DE PALAZZO - CANONICA", "DE LA FAVA","DE LA PIETA'  - SANT'ANTONIN","DE SAN GIUSEPPE", "DE LA TETA - SAN GIOVANNI LATERANO RAMO BASSO", "DE SAN GIACOMO DALL'ORIO","DE SAN VIO"]
+    noal_passed=False
+    for index,canal in acqua.iterrows():
+    
+        if canal['TC_DENOM']=="DEI FUSERI":
+            print('aggiungo senso unico al rio dei fuseri')
+            senso_unico[index]=1
+        if canal['TC_DENOM']=="DEI VETRAI":
+            print('aggiungo senso unico al rio dei vetrai')
+            senso_unico[index]=1
+        if canal['TC_DENOM']=="DE CA' FOSCARI":
+            print('aggiungo senso unico al rio di ca foscari')
+            senso_unico[index]=1
+        if canal['ONEWAY'] is not None:
+         
+            if canal['TC_DENOM'] in lista_sensi_inversi:
+                print('cambiato verso di ', canal['TC_DENOM'])
+                senso_unico[index]=-1          
+            else:
+                senso_unico[index]=1
+            #if canal['TC_DENOM'] in ["DE CA' FOSCARI", "NOVO"]:
+            #   orario[index]=(0,12)
+            #if canal['TC_DENOM']=="DEI VETRAI":
+            #orario[index]=(8,14) #solo feriali
+        
+    total = gpd.GeoDataFrame(data = zip(lunghezza, vel_max, solo_remi, larghezza, senso_unico, acqua["TC_DENOM"],acqua["geometry"]), columns = ["length","vel_max", "solo_remi", "larghezza", "senso_unico", "nome","geometry"])
 
     today = datetime.datetime.today().strftime ('%d%m')
 
