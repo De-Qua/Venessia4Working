@@ -2,11 +2,14 @@
 ##### salva in pickle il gpd finale (strade). SHP deve già essere om WSG4
 import geopandas as gpd
 import networkx as nt
+import numpy as np
 import pickle
 from lib.lib_func_import import lines_length
 import os
 import sys
 import datetime
+import pdb
+import pandas as pd
 
 if __name__ == "__main__":
 
@@ -17,7 +20,7 @@ if __name__ == "__main__":
     print("******************************************\n")
 
     folder = "/Users/Palma/Documents/Projects/Venessia4Working/Venessia4Working/data" #os.getcwd()
-    shp_relative_path = "dequa_ve_acqua_v4.shp"
+    shp_relative_path = "dequa_ve_acqua_5.shp"
     
     if len(sys.argv) > 1:
         print("great, path is gien as {}\nThanks".format(sys.argv[1]))
@@ -39,6 +42,10 @@ if __name__ == "__main__":
     vel_max_mp=shp_gpd['VEL_MAX_MP'][:]
     larghezza=shp_gpd['LARGHEZZA_']
     senso_unico=shp_gpd['ONEWAY'][:]
+    orario_senso_start=gpd.GeoSeries(np.zeros([larghezza.size], dtype=np.int8))
+    orario_senso_end=gpd.GeoSeries(np.ones([larghezza.size])*24, dtype=np.int8)
+    orario_chiuso_start=gpd.GeoSeries(np.zeros([larghezza.size]), dtype=np.int8)
+    orario_chiuso_end=gpd.GeoSeries(np.ones([larghezza.size])*24, dtype=np.int8)
     
     lista_sensi_inversi=["DE SAN LUCA - ROSSINI", "DE PALAZZO - CANONICA", "DE LA FAVA","DE LA PIETA'  - SANT'ANTONIN","DE SAN GIUSEPPE", "DE LA TETA - SAN GIOVANNI LATERANO RAMO BASSO", "DE SAN GIACOMO DALL'ORIO","DE SAN VIO"]
     lista_limiti_sette=["GRANDE","DE CANNAREGIO"]
@@ -54,17 +61,20 @@ if __name__ == "__main__":
         if canal['TC_DENOM']=="DE CA' FOSCARI":
             print('aggiungo senso unico al rio di ca foscari')
             senso_unico[index]=1
-        if canal['ONEWAY'] is not None:
+        if senso_unico[index] is not None:
             
             if canal['TC_DENOM'] in lista_sensi_inversi:
                 print('cambiato verso di ', canal['TC_DENOM'])
                 senso_unico[index]=-1          
             else:
                 senso_unico[index]=1
-            #if canal['TC_DENOM'] in ["DE CA' FOSCARI", "NOVO"]:
-            #    orario_senso[index]=(0,12)
-            #if canal['TC_DENOM']=="DEI VETRAI":
-            #    orario_senso[index]=(8,14) #solo feriali
+            if canal['TC_DENOM'] in ["DE CA' FOSCARI", "NOVO"]:
+                orario_senso_start[index]=0
+                orario_senso_end[index]=12
+            if canal['TC_DENOM']=="DEI VETRAI":
+                orario_senso_start[index]=8 #solo feriali
+                orario_senso_end[index]=14
+                                
         if canal['TC_DENOM'] in lista_limiti_sette:
             print('cambio limite di velocita nel ', canal['TC_DENOM'])
             vel_max[index]=7
@@ -72,16 +82,15 @@ if __name__ == "__main__":
         if canal['TC_DENOM']=="SAN CRISTOFORO":
             print('modifico limite di velocita canale di san cristoforo')
             vel_max[index]=11
-            
-    total = gpd.GeoDataFrame(data = zip(lunghezza, vel_max, vel_max_mp, solo_remi, larghezza, senso_unico, shp_gpd["TC_DENOM"],shp_gpd["geometry"]), columns = ["length","vel_max", "vel_max_mp", "solo_remi", "larghezza", "senso_unico", "nome","geometry"])
 
+    total = gpd.GeoDataFrame(data = zip(lunghezza, vel_max, vel_max_mp, solo_remi, larghezza, senso_unico, orario_senso_start,orario_senso_end, shp_gpd["TC_DENOM"],shp_gpd["geometry"]), columns = ["length","vel_max", "vel_max_mp", "solo_remi", "larghezza", "senso_unico", "h_su_start","h_su_end", "nome","geometry"])
     today = datetime.datetime.today().strftime ('%d%m')
 
     print("saving the adapted version as the name plus suffix _dequa_{today} to understand..")# salva nuovo dataframe in shp
     new_shp_name = "{}_dequa_ve_acqua_{}.shp".format(shp_path[:-4], today)
     total.to_file(new_shp_name)
 
-    print("now create the graph with networkx..")
+    print("now create the graph with networkx, from file: ", new_shp_name)
     # ricarica lo shapefile in networkx come grafo
     G = nt.read_shp(new_shp_name)
     # rendi grafo undirected
