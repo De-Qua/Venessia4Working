@@ -4,6 +4,7 @@ import geopandas as gpd
 import networkx as nt
 import numpy as np
 import pickle
+import csv
 from lib.lib_func_import import lines_length
 import os
 import sys
@@ -21,9 +22,21 @@ if __name__ == "__main__":
 
     folder = "/Users/Palma/Documents/Projects/Venessia4Working/Venessia4Working/data" #os.getcwd()
     shp_relative_path = "dequa_ve_acqua_5.shp"
-    
+    print("\n\n\n\n\n*****\nWARNING\nCONTROLLA I PONTI! DA ZUCCHETTA A COMUNE\n*****\n\n\n\n\n")
+    ponti = []
+    with open("/home/lucatastrophe/Desktop/venessia/Venessia4Working/databases/Final Ponti Data CSV.csv", 'r', encoding='utf-8') as csvfile:
+        reader = csv.reader(csvfile)
+        first_row = True
+        for row in reader:
+            if first_row:
+                col_num_as_list = [i for i in range(len(row)) if row[i] == 'Minimum Height (m)']
+                first_row = False
+                col_num = col_num_as_list[0]
+            elif row[0]:
+                ponti.append({'altezza':row[col_num], 'bridge_num_zucchetta':row[0], 'nome':row[1]})
+                
     if len(sys.argv) > 1:
-        print("great, path is gien as {}\nThanks".format(sys.argv[1]))
+        print("great, path is given as {}\nThanks".format(sys.argv[1]))
         shp_path = os.path.join(sys.argv[1], shp_relative_path)
     else:
 
@@ -43,15 +56,26 @@ if __name__ == "__main__":
     larghezza=shp_gpd['LARGHEZZA_']
     senso_unico=shp_gpd['ONEWAY'][:]
     orario_senso_start=gpd.GeoSeries(np.zeros([larghezza.size], dtype=np.int8))
-    orario_senso_end=gpd.GeoSeries(np.ones([larghezza.size])*24, dtype=np.int8)
-    orario_chiuso_start=gpd.GeoSeries(np.zeros([larghezza.size]), dtype=np.int8)
-    orario_chiuso_end=gpd.GeoSeries(np.ones([larghezza.size])*24, dtype=np.int8)
-    
+    orario_senso_end=gpd.GeoSeries(np.ones([larghezza.size], dtype=np.int8)*24)
+    orario_chiuso_start=gpd.GeoSeries(np.zeros([larghezza.size], dtype=np.int8))
+    orario_chiuso_end=gpd.GeoSeries(np.ones([larghezza.size], dtype=np.int8)*24)
+    altezza=np.double(np.ones_like(solo_remi))*1000
+
     lista_sensi_inversi=["DE SAN LUCA - ROSSINI", "DE PALAZZO - CANONICA", "DE LA FAVA","DE LA PIETA'  - SANT'ANTONIN","DE SAN GIUSEPPE", "DE LA TETA - SAN GIOVANNI LATERANO RAMO BASSO", "DE SAN GIACOMO DALL'ORIO","DE SAN VIO"]
     lista_limiti_sette=["GRANDE","DE CANNAREGIO"]
-    noal_passed=False
+    ponte_codes_list=[]
+    epsilon=0.001
     for index,canal in shp_gpd.iterrows():
-    
+
+        if not np.isnan(canal['Numero_Zuc']): # != "None": #is not None:
+            print('trovato ponte ', canal['Nome_Ponte'])
+            for ponte in ponti:
+
+                if np.abs(float(ponte['bridge_num_zucchetta'])-float(canal['Numero_Zuc']))<epsilon:
+                    ponte_codes_list.append(canal['Numero_Zuc'])
+                    altezza[index]=ponte['altezza']
+                    print("il ponte {} e alto {}".format(ponte['nome'], ponte['altezza']))
+                    break
         if canal['TC_DENOM']=="DEI FUSERI":
             print('aggiungo senso unico al rio dei fuseri')
             senso_unico[index]=1
@@ -62,10 +86,10 @@ if __name__ == "__main__":
             print('aggiungo senso unico al rio di ca foscari')
             senso_unico[index]=1
         if senso_unico[index] is not None:
-            
+
             if canal['TC_DENOM'] in lista_sensi_inversi:
                 print('cambiato verso di ', canal['TC_DENOM'])
-                senso_unico[index]=-1          
+                senso_unico[index]=-1
             else:
                 senso_unico[index]=1
             if canal['TC_DENOM'] in ["DE CA' FOSCARI", "NOVO"]:
@@ -74,7 +98,7 @@ if __name__ == "__main__":
             if canal['TC_DENOM']=="DEI VETRAI":
                 orario_senso_start[index]=8 #solo feriali
                 orario_senso_end[index]=14
-                                
+
         if canal['TC_DENOM'] in lista_limiti_sette:
             print('cambio limite di velocita nel ', canal['TC_DENOM'])
             vel_max[index]=7
@@ -83,7 +107,12 @@ if __name__ == "__main__":
             print('modifico limite di velocita canale di san cristoforo')
             vel_max[index]=11
 
-    total = gpd.GeoDataFrame(data = zip(lunghezza, vel_max, vel_max_mp, solo_remi, larghezza, senso_unico, orario_senso_start,orario_senso_end, shp_gpd["TC_DENOM"],shp_gpd["geometry"]), columns = ["length","vel_max", "vel_max_mp", "solo_remi", "larghezza", "senso_unico", "h_su_start","h_su_end", "nome","geometry"])
+    assert(len(ponti)==len(ponte_codes_list),'diversi ponti tra shp e csv')
+
+    #da aggiungere a total: h_closed_start, h_closed_end
+    total = gpd.GeoDataFrame(data = zip(lunghezza, vel_max, vel_max_mp, solo_remi, larghezza, altezza, senso_unico, orario_senso_start,orario_senso_end, shp_gpd["TC_DENOM"],shp_gpd["geometry"]),
+    columns = ["length","vel_max", "vel_max_mp", "solo_remi", "larghezza", "altezza", "senso_unico", "h_su_start","h_su_end", "nome","geometry"])
+
     today = datetime.datetime.today().strftime ('%d%m')
 
     print("saving the adapted version as the name plus suffix _dequa_{today} to understand..")# salva nuovo dataframe in shp
@@ -98,7 +127,7 @@ if __name__ == "__main__":
 
     print("cool, if we got here, everything worked! Now we can pickle the graph..")
     # salva il grafo come pickle
-    pickle_name = "{}_pickle_4326VE".format(new_shp_name)
+    pickle_name = "{}_pickle_4326VE".format(new_shp_name[:-4])
     with open(pickle_name, 'wb') as file:
         pickle.dump(G_un, file)
 
