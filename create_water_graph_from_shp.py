@@ -16,15 +16,30 @@ if __name__ == "__main__":
 
     print("\n******************************************")
     print(" ### WATER VERSION ###")
-    print("Let's create a networkx graph from a shp file!\nI hope you gave as a parameter the shp file or hard-coded in the text! :)")
+    print("Let's create a networkx graph from a shp file!\nI hope you gave as a parameter the shp files or hard-coded in the text! :)")
     print("Either pass as parameter: python3 shp_path (full, not relative)\nor write the folder at line 16 and the name at line 22 :)")
     print("******************************************\n")
 
     folder = "/Users/Palma/Documents/Projects/Venessia4Working/Venessia4Working/data" #os.getcwd()
     shp_relative_path = "dequa_ve_acqua_5.shp"
-    print("\n\n\n\n\n*****\nWARNING\nCONTROLLA I PONTI! DA ZUCCHETTA A COMUNE\n*****\n\n\n\n\n")
+    zucchetta_relative_path = "Final Ponti Data CSV.csv"
     ponti = []
-    with open("/home/lucatastrophe/Desktop/venessia/Venessia4Working/databases/Final Ponti Data CSV.csv", 'r', encoding='utf-8') as csvfile:
+
+    if len(sys.argv) > 2:
+        shp_path = sys.argv[1]
+        zucchetta_path = sys.argv[2]
+        print("great, path is given as {}\nzucchetta is given as {}\nThanks".format(shp_path,zucchetta_path))
+    elif len(sys.argv) > 1:
+        shp_path = sys.argv[1]
+        zucchetta_path = os.path.join(folder, zucchetta_relative_path)
+        print("great, path is given as {}\nno zucchetta is given, we use hard-coded one, which now is: Thanks".format(sys.argv[1], zucchetta_path))
+    else:
+        shp_path = os.path.join(folder, shp_relative_path)
+        zucchetta_path = os.path.join(folder, zucchetta_relative_path)
+        print("no path given, we use hard-coded one, which for shp is: {}\nfor zucchetta is: {}".format(shp_path, zucchetta_path))
+
+    print("\n\n\n\n\n*****\nWARNING\nCONTROLLA I PONTI! DA ZUCCHETTA A COMUNE\n*****\n\n\n\n\n")
+    with open(zucchetta_path, 'r', encoding='latin') as csvfile:
         reader = csv.reader(csvfile)
         first_row = True
         for row in reader:
@@ -34,14 +49,6 @@ if __name__ == "__main__":
                 col_num = col_num_as_list[0]
             elif row[0]:
                 ponti.append({'altezza':row[col_num], 'bridge_num_zucchetta':row[0], 'nome':row[1]})
-                
-    if len(sys.argv) > 1:
-        print("great, path is given as {}\nThanks".format(sys.argv[1]))
-        shp_path = os.path.join(sys.argv[1], shp_relative_path)
-    else:
-
-        shp_path = os.path.join(folder, shp_relative_path)
-        print("no path given, we use hard-coded one, which now is: {}".format(shp_path))
 
     print("reading the file..")
     shp_gpd = gpd.read_file(shp_path)
