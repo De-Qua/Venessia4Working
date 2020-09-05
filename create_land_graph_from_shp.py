@@ -16,14 +16,15 @@ if __name__ == "__main__":
     print("Either pass as parameter: python3 shp_path (full, not relative)\nor write the folder at line 16 and the name at line 22 :)")
     print("******************************************\n")
 
-    folder = "/Users/Palma/Documents/Projects/Venessia4Working/Venessia4Working/data" #os.getcwd()
-    shp_relative_path = "dequa_ve_terra_v7.shp"
-    
+    folder = "/Users/ale/Documents/Venezia/MappaDisabili/data/OpenDataVenezia/dequa_ve_shp/terra" #os.getcwd()
+    shp_relative_path = "v8/dequa_ve_terra_v8.shp"
+
     if len(sys.argv) > 1:
-        print("great, path is gien as {}\nThanks".format(sys.argv[1]))
-        shp_path = os.path.join(sys.argv[1], shp_relative_path)
+        print("great, path is given as {}\nThanks".format(sys.argv[1]))
+        #shp_path = os.path.join(sys.argv[1], shp_relative_path)
+        shp_path = sys.argv[1]
     else:
-        
+
         shp_path = os.path.join(folder, shp_relative_path)
         print("no path given, we use hard-coded one, which now is: {}".format(shp_path))
 
@@ -32,14 +33,52 @@ if __name__ == "__main__":
 
     print("adapting to our needs..")
     lunghezza = lines_length(streets['geometry'])
-    ponte=[]
-    for bridge in streets["PONTE_CP"]:
-        ponte.append(1 if bridge=="02" else 0)
+
+    list_of_Codice_Pon_flat = ["MELONI"]
+    # L'elenco di questi ponti è preso da https://www.comune.venezia.it/it/content/venezia-accessibile-itinerari-senza-barriere
+    list_of_Codice_Pon_gradino_aggevolato = ["PAGLIA","SECHER","PIERO","RASPI","GUGLIE","PAPADO"]
+    list_of_Codice_Pon_gradino_aggevolato_con_accomp = ["FELICE"]
+    list_of_Codice_Pon_rampa_fissa = ["QUINTA","PALUDO"]
+    list_of_Codice_Pon_rampa_provvisoria_feb_nov = ["VIN"]
+    list_of_Codice_Pon_rampa_provvisoria_set_giu = ["MOLIN","SALUTE","CABALA","INCURA","CALCINA","LUNGO"]
+    list_of_Codice_Pon_rampa_provvisoria_mag_nov = ["VENETA"]
+
+    ponte = []
+    accessible = []
+    for bridge in streets["Codice_Pon"]:
+        if bridge:
+            if bridge in list_of_Codice_Pon_flat:
+                ponte.append(0)
+                accessible.append(1)
+            elif bridge in list_of_Codice_Pon_gradino_aggevolato:
+                ponte.append(1)
+                accessible.append(2)
+            elif bridge in list_of_Codice_Pon_gradino_aggevolato_con_accomp:
+                ponte.append(1)
+                accessible.append(3)
+            elif bridge in list_of_Codice_Pon_rampa_fissa:
+                ponte.append(1)
+                accessible.append(4)
+            elif bridge in list_of_Codice_Pon_rampa_provvisoria_feb_nov:
+                ponte.append(1)
+                accessible.append(5)
+            elif bridge in list_of_Codice_Pon_rampa_provvisoria_set_giu:
+                ponte.append(1)
+                accessible.append(6)
+            elif bridge in list_of_Codice_Pon_rampa_provvisoria_mag_nov:
+                ponte.append(1)
+                accessible.append(7)
+            else:
+                ponte.append(1)
+                accessible.append(0)
+        else:
+            ponte.append(0)
+            accessible.append(1)        
 
     print("creating a new dataframe only with the data we need..")
     # crea nuovo dataframe con solo colonne interessanti
-    pdb.set_trace()
-    total = gpd.GeoDataFrame(data = zip(lunghezza, ponte, streets["geometry"],streets['CVE_SUB_CO'],streets['VEL_MAX']), columns = ["length","ponte", "geometry","street_id","vel_max"])
+    #pdb.set_trace()
+    total = gpd.GeoDataFrame(data = zip(lunghezza, ponte, accessible, streets["geometry"],streets['CVE_SUB_CO'],streets['VEL_MAX']), columns = ["length","ponte", "accessible","geometry","street_id","vel_max"])
 
     today = datetime.datetime.today().strftime ('%d%m')
 
@@ -55,7 +94,7 @@ if __name__ == "__main__":
 
     print("cool, if we got here, everything worked! Now we can pickle the graph..")
     # salva il grafo come pickle
-    pickle_name = "{}_pickle_4326VE".format(new_shp_name)
+    pickle_name = "{}_pickle_4326VE".format(new_shp_name[:-4])
     with open(pickle_name, 'wb') as file:
         pickle.dump(G_un, file)
 
