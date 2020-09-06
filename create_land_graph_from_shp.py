@@ -36,8 +36,8 @@ if __name__ == "__main__":
 
     list_of_Codice_Pon_flat = ["MELONI"]
     # L'elenco di questi ponti è preso da https://www.comune.venezia.it/it/content/venezia-accessibile-itinerari-senza-barriere
-    list_of_Codice_Pon_gradino_aggevolato = ["PAGLIA","SECHER","PIERO","RASPI","GUGLIE","PAPADO"]
-    list_of_Codice_Pon_gradino_aggevolato_con_accomp = ["FELICE"]
+    list_of_Codice_Pon_gradino_agevolato = ["PAGLIA","SECHER","PIERO","RASPI","GUGLIE","PAPADO"]
+    list_of_Codice_Pon_gradino_agevolato_con_accomp = ["FELICE"]
     list_of_Codice_Pon_rampa_fissa = ["QUINTA","PALUDO"]
     list_of_Codice_Pon_rampa_provvisoria_feb_nov = ["VIN"]
     list_of_Codice_Pon_rampa_provvisoria_set_giu = ["MOLIN","SALUTE","CABALA","INCURA","CALCINA","LUNGO"]
@@ -50,10 +50,10 @@ if __name__ == "__main__":
             if bridge in list_of_Codice_Pon_flat:
                 ponte.append(0)
                 accessible.append(1)
-            elif bridge in list_of_Codice_Pon_gradino_aggevolato:
+            elif bridge in list_of_Codice_Pon_gradino_agevolato:
                 ponte.append(1)
                 accessible.append(2)
-            elif bridge in list_of_Codice_Pon_gradino_aggevolato_con_accomp:
+            elif bridge in list_of_Codice_Pon_gradino_agevolato_con_accomp:
                 ponte.append(1)
                 accessible.append(3)
             elif bridge in list_of_Codice_Pon_rampa_fissa:
