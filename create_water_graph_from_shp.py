@@ -20,8 +20,9 @@ if __name__ == "__main__":
     print("Either pass as parameter: python3 shp_path (full, not relative)\nor write the folder at line 16 and the name at line 22 :)")
     print("******************************************\n")
 
-    folder = "/Users/Palma/Documents/Projects/Venessia4Working/Venessia4Working/data" #os.getcwd()
-    shp_relative_path = "dequa_ve_acqua_5.shp"
+    folder = os.getcwd()
+#    "/Users/Palma/Documents/Projects/Venessia4Working/Venessia4Working/data" 
+    shp_relative_path = "dequa_ve_acqua_v7.shp"
     zucchetta_relative_path = "Final Ponti Data CSV.csv"
     ponti = []
 
@@ -49,7 +50,6 @@ if __name__ == "__main__":
                 col_num = col_num_as_list[0]
             elif row[0]:
                 ponti.append({'altezza':row[col_num], 'bridge_num_zucchetta':row[0], 'nome':row[1]})
-
     print("reading the file..")
     shp_gpd = gpd.read_file(shp_path)
 
@@ -64,16 +64,58 @@ if __name__ == "__main__":
     senso_unico=shp_gpd['ONEWAY'][:]
     orario_senso_start=gpd.GeoSeries(np.zeros([larghezza.size], dtype=np.int8))
     orario_senso_end=gpd.GeoSeries(np.ones([larghezza.size], dtype=np.int8)*24)
-    orario_chiuso_start=gpd.GeoSeries(np.zeros([larghezza.size], dtype=np.int8))
+    orario_chiuso_start=gpd.GeoSeries(np.ones([larghezza.size], dtype=np.int8)*24)
     orario_chiuso_end=gpd.GeoSeries(np.ones([larghezza.size], dtype=np.int8)*24)
     altezza=np.double(np.ones_like(solo_remi))*1000
 
     lista_sensi_inversi=["DE SAN LUCA - ROSSINI", "DE PALAZZO - CANONICA", "DE LA FAVA","DE LA PIETA'  - SANT'ANTONIN","DE SAN GIUSEPPE", "DE LA TETA - SAN GIOVANNI LATERANO RAMO BASSO", "DE SAN GIACOMO DALL'ORIO","DE SAN VIO"]
     lista_limiti_sette=["GRANDE","DE CANNAREGIO"]
+
+    lista_no_info_per_non_dimenticare=["DE LE GALEAZZE", "SCUOLA GABELLI","DE LA VERONA - MENUO" ]
+    lista_limiti_laguna=["DE LA RANA", "MOLO B", "DI CAMPALTO","COA DI LATTE","MORTO - MAZZORBO","CARBONERA","ALTINO","MONTIRON","DE SANT'ANTONIO","DEL COLPO", "DI BOSSOLARO", "LA ROTTA","CAMPANA", "BOMBAE", "PORTOSECCO","DE LA CAVA","CODA REZIOL"]
+    vel_laguna=10
+    lista_limiti_centro=["SCUOLA GABELLI","A. CANAL","DE LA SACA DE LA MISERICORDIA","ARSENAL VECHIO"] # in realtà sono quasi tutti al lido
+    lista_divieti_0_24 = ["ARSENAL VECHIO"]################## caso particolare, gli altri hanno il divieto di transito nella colonna giusta!
+    # canali con limite per canoe e simili dalle 8 alle 15 lunedì-venerdì e dalle 8 alle 13 il sabato
+    lista_no_remetti = ["Canal Grande", "Cannaregio", "Giardini", "Greci - San Lorenzo", "- Santa Giustina - Sant’Antonin – Pietà", "Noale", "Novo", "Ca’ Foscari", "Santi Apostoli - Gesuiti"] # nomi da correggere
+    vel_centro=5
     ponte_codes_list=[]
     epsilon=0.001
     for index,canal in shp_gpd.iterrows():
 
+        print(canal['TC_DENOM'])
+        if canal['DIVIETO_TR']:
+            if 'art. 8' in canal['DIVIETO_TR']:
+                print('divieto transito imbarcazioni a motore, esclusi concessionari spazi acquei e unità di enti e aziende pubbliche')
+                orario_chiuso_start[index]=0
+        if canal['DIVdiporto']:    
+            print(canal['DIVdiporto'])
+            orario_chiuso_start[index]=8
+            orario_chiuso_end[index]=12
+            
+        if canal['VEL_MAX']==0:
+            print(' has max vel=0')
+            if canal['TC_DENOM'] in lista_limiti_laguna:
+                vel_max[index]=vel_laguna
+            if canal['TC_DENOM'] in lista_limiti_centro:
+                vel_max[index]=vel_centro
+            if not canal['TC_DENOM']:
+                print("changed max speed in none canal")
+                vel_max[index]=vel_laguna
+        if canal['VEL_MAX_MP']==0:
+           # print(canal['TC_DENOM'], ' has max vel=0')
+            if canal['TC_DENOM'] in lista_limiti_laguna:
+                vel_max_mp[index]=vel_laguna
+            if canal['TC_DENOM'] in lista_limiti_centro:
+                vel_max_mp[index]=vel_centro
+            if not canal['TC_DENOM']:
+                vel_max_mp[index]=vel_laguna
+                
+        if solo_remi[index]==1:
+            #print('era un rio blu')
+            vel_max_mp[index]=vel_centro
+            vel_max[index]=vel_centro
+    
         if not np.isnan(canal['Numero_Zuc']): # != "None": #is not None:
             print('trovato ponte ', canal['Nome_Ponte'])
             for ponte in ponti:
@@ -117,13 +159,13 @@ if __name__ == "__main__":
     assert(len(ponti)==len(ponte_codes_list),'diversi ponti tra shp e csv')
 
     #da aggiungere a total: h_closed_start, h_closed_end
-    total = gpd.GeoDataFrame(data = zip(lunghezza, vel_max, vel_max_mp, solo_remi, larghezza, altezza, senso_unico, orario_senso_start,orario_senso_end, shp_gpd["TC_DENOM"],shp_gpd["geometry"]),
-    columns = ["length","vel_max", "vel_max_mp", "solo_remi", "larghezza", "altezza", "senso_unico", "h_su_start","h_su_end", "nome","geometry"])
+    total = gpd.GeoDataFrame(data = zip(lunghezza, vel_max, vel_max_mp, solo_remi, larghezza, altezza, senso_unico, orario_senso_start,orario_senso_end, orario_chiuso_start, orario_chiuso_end, shp_gpd["TC_DENOM"],shp_gpd["geometry"]),
+    columns = ["length","vel_max", "vel_max_mp", "solo_remi", "larghezza", "altezza", "senso_unico", "h_su_start","h_su_end", "dt_start", "dt_end", "nome","geometry"])
 
     today = datetime.datetime.today().strftime ('%d%m')
 
     print("saving the adapted version as the name plus suffix _dequa_{today} to understand..")# salva nuovo dataframe in shp
-    new_shp_name = "{}_dequa_ve_acqua_{}.shp".format(shp_path[:-4], today)
+    new_shp_name = "{}/{}_{}.shp".format(shp_path[:],shp_relative_path[:-4] ,today)
     total.to_file(new_shp_name)
 
     print("now create the graph with networkx, from file: ", new_shp_name)
