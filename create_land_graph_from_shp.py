@@ -82,8 +82,8 @@ if __name__ == "__main__":
 
     today = datetime.datetime.today().strftime ('%d%m')
 
-    print("saving the adapted version as the name plus suffix _dequa_{today} to understand..")# salva nuovo dataframe in shp
-    new_shp_name = "{}_dequa_ve_terra_{}.shp".format(shp_path[:-4], today)
+    print("saving the adapted version as the name plus suffix _{today} to understand..")# salva nuovo dataframe in shp
+    new_shp_name = "{}_{}.shp".format(shp_path[:-4], today)
     total.to_file(new_shp_name)
 
     print("now create the graph with networkx..")
