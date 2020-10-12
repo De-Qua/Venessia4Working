@@ -8,35 +8,230 @@ import datetime
 import pdb
 import shapely.wkt as wkt
 import numpy as np
-
-cl_folder = "/Users/Palma/Documents/Projects/Venessia4Working/Venessia4Working/data"
-cl_path = os.path.join(cl_folder, "curve_di_livello_dequa_crs.shp")
+#%%
+cl_folder = "/Volumes/Maxtor/Venezia/data/OpenDataVenezia/curve_livello"
+cl_path = os.path.join(cl_folder, "curve_livello_polyline_4326VE.shp")
 curve_di_livello = gpd.read_file(cl_path)
 curve_di_livello['geometry'][0]
 geom_curves = curve_di_livello['geometry']
-
+curve_di_livello_4326 = curve_di_livello.to_crs(4326)
 #archi
-archi_path = os.path.join(cl_folder, "dequa_ve_terra_v9_0910.shp")
+archi_folder = '/Volumes/Maxtor/Venezia/data/OpenDataVenezia/dequa_ve_shp/terra/v9'
+archi_path = os.path.join(archi_folder, "dequa_ve_terra_v9_0910.shp")
 archi = gpd.read_file(archi_path)
 
 #envelope per shapely
-envelope_path = os.path.join(cl_folder, "TP_STR.shp")
+envelope_folder = '/Volumes/Maxtor/Venezia/data/OpenDataVenezia'
+envelope_path = os.path.join(envelope_folder, "TP_STR_4326VE.shp")
 envelopes = gpd.read_file(envelope_path)
+
+path_graph = os.path.join(folder, 'dequa_ve_terra_v8_dequa_ve_terra_0509_pickle_4326VE')
+with open(path_graph, 'rb') as file:
+    G_un = pickle.load(file)
 
 import shapely
 print(shapely.__version__)
 from shapely.ops import voronoi_diagram
+import geopandas as gpd
+import matplotlib.pyplot as plt
+import geopandas as gpd
+import pandas as pd
+from shapely.ops import voronoi_diagram as svd
+from shapely.geometry import Polygon, MultiPolygon
+
+list_of_altitudes=np.linspace(80, 200,1)
 
 for geom_polygon, polygon_id in envelopes[['geometry','CVE_SCOD_V']].values:
+    if not polygon_id == 44340:
+        continue
 
     edges = archi[archi['street_id']==polygon_id]
-
-    print(len(edges))
-    print(edges)
+    if edges.empty:
+        continue
     geom_edges = edges['geometry']
-    voronoi_diagram(geom_edges, geom_polygon)
+    edge_scaled = geom_edges.scale(xfact=0.9, yfact=0.9)
+    edge_dataframe = gpd.GeoDataFrame(geometry=edge_scaled, crs=4326).reset_index(drop=True)
+
+    edge_in_polygon = edge_dataframe[~edge_dataframe.disjoint(geom_polygon)].reset_index(drop=True)
+    edge_in_polygon['edge_id'] = edge_in_polygon.index
+    vd = voronoiDiagram4plg(edge_in_polygon, geom_polygon)
+    vd['voronoi_id'] = vd.index
+    edge_in_polygon.to_file('edges.geojson', driver= "GeoJSON")
+    vd.to_file('output.geojson', driver='GeoJSON')
+
+    # interseca i singoli poligoni all'interno di un vd con le curve di livello
+    #for ind in range(len(vd)):
+    curve_nel_vd = gpd.overlay(curve_di_livello_4326, vd, how='intersection')
+    #curve_nel_vd = curve_di_livello_4326[curve_di_livello_4326.intersects(vd['geometry'][ind])]
+    # max_tide = curve_nel_vd.dissolve(by='voronoi_id', aggfunc='max')
+    # min_tide = curve_nel_vd.dissolve(by='voronoi_id', aggfunc='min')
+    # avg_tide = curve_nel_vd.dissolve(by='voronoi_id', aggfunc='mean')
+    # median_tide = curve_nel_vd.dissolve(by='voronoi_id', aggfunc='median')
+
+    min_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].min()
+    max_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].max()
+    avg_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].mean()
+    median_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].median()
+
+    edge_in_polygon['max_tide'] = max_tide #max(curve_nel_vd[curve_nel_vd['voronoi_id']==id])
+    edge_in_polygon['min_tide'] = min_tide #min(curve_nel_vd['LIVELLO_PS'])
+    edge_in_polygon['avg_tide'] = avg_tide
+    edge_in_polygon['median_tide'] = median_tide
+
+
+        # for alt in list_of_altitudes:
+        #     curve_flooded = curve_di_livello[curve_di_livello['altitudine']<=alt]
+            #for curve in curve_flooded
+        #     polygon_flooded = curve_flooded.convex_hull
+
+        # capisci i valori minimo, massimo e medio (usando il metodo di luca)
+
+    # aggiungili al relativo arco del grafo (sappiamo qual è?)
+    #archi_grafo_con_lo_stesso_id = [edge for edge in G_un.edges if edge['street_id'] == polygon_id]
+    #archo_che_ci_serve = [edge for edge in archi_grafo_con_lo_stesso_id if geom_edges ]
+    #arco_che_ci_serve = G_un[geom_edges.boundaries[0]][geom_edges.boundaries[1]]
+
+
+    # edges.reset_index(drop=True)
+    # edges_shapely = edges.unary_union #geom_edges = edges['geometry']
+    # print(edges_shapely)
+    # edges_areas = voronoi_diagram(edges_shapely, geom_polygon, tolerance=0.0, edges=False)
+    # geom_polygon
+    # edges_shapely
+    # edges_areas
+    # #print("edges {} correspond to {}".format(edges, edges_areas))
+    # geoplot.polyplot(world, figsize=(8, 4))
+    # #note that it is NOT supported to GeoDataFrame directly
+    # gs = gpd.GeoSeries([edges_areas]).explode()
+    # #convert to GeoDataFrame
+    # #note that if gdf was shapely.geometry.MultiPolygon, it has no attribute 'crs'
+    # gdf_vd_primary = gpd.geodataframe.GeoDataFrame(geometry=gs, crs=4326)
+    # gpd.plot(gdf_vd_primary)
+    # plt.plot(edges_areas)
+    # plt.plot(geom_polygon)
+	# #reset index
+    # gdf_vd_primary.reset_index(drop=True)	#append(gdf)
+    # #spatial join by intersecting and dissolve by `index_right`
+    # gdf_temp = ( gpd.sjoin(gdf_vd_primary, gdf, how='inner', op='intersects')
+	# 	.dissolve(by='index_right').reset_index(drop=True) )
+    # gdf_vd = gpd.clip(gdf_temp, mask)
+    # gdf_vd = dropHoles(gdf_vd)
     break
-    voronoi_diagram
+
+
+from shapely.geometry import MultiPoint, MultiLineString
+from shapely.ops import voronoi_diagram
+
+from matplotlib import pyplot
+from descartes.patch import PolygonPatch
+from figures import SIZE, BLUE, GRAY, set_limits
+
+points = MultiPoint([(0, 0), (1, 1), (0, 2), (2, 2), (3, 1), (1, 0)])
+lines = MultiLineString([[(0,0), (1,1)], [(1.1,1.1), (2,2)]])
+polygons = [Polygon([(0,0),(1,1),(0.9,0.9),(0.1,0.1)]),Polygon([(2,2),(3,3),(2.9,2.9),(2.1,2.1)])]
+regions = voronoi_diagram(points)
+regions_lines = voronoi_diagram(lines)
+regions_polygons = voronoi_diagram(polygons)
+
+fig = pyplot.figure(1, dpi=90)
+fig.set_frameon(True)
+ax = fig.add_subplot(111)
+
+for region in regions:
+    patch = PolygonPatch(region, facecolor='blue', edgecolor='blue', alpha=0.5, zorder=2)
+    ax.add_patch(patch)
+
+for point in points:
+    pyplot.plot(point.x, point.y, 'o', color='black')
+
+set_limits(ax, -1, 4, -1, 3)
+
+pyplot.show()
+
+def bufferDissolve(gdf, distance, join_style=3):
+	'''Create buffer and dissolve thoese intersects.
+
+	Parameters:
+		gdf:
+			Type: geopandas.GeoDataFrame
+		distance: radius of the buffer
+			Type: float
+	Returns:
+		gdf_bf: buffered and dissolved GeoDataFrame
+			Type: geopandas.GeoDataFrame
+	'''
+	#create buffer and dissolve by invoking `unary_union`
+	smp = gdf.buffer(distance, join_style).unary_union
+	#convert to GeoSeries and explode to single polygons
+	gs = gpd.GeoSeries([smp]).explode()
+	#convert to GeoDataFrame
+	gdf_bf = gpd.GeoDataFrame(geometry=gs, crs=gdf.crs).reset_index(drop=True)
+	return gdf_bf
+
+def voronoiDiagram4plg(gdf, mask):
+	'''Create Voronoi diagram / Thiessen polygons based on polygons.
+
+	Parameters:
+		gdf: polygons to be used to create Voronoi diagram
+			Type: geopandas.GeoDataFrame
+		mask: polygon vector used to clip the created Voronoi diagram
+			Type: GeoDataFrame, GeoSeries, (Multi)Polygon
+	Returns:
+		gdf_vd: Thiessen polygons
+			Type: geopandas.geodataframe.GeoDataFrame
+	'''
+	gdf.reset_index(drop=True)
+	#convert to shapely.geometry.MultiPolygon
+	smp = gdf.unary_union
+	#create primary voronoi diagram by invoking shapely.ops.voronoi_diagram (new in Shapely 1.8.dev0)
+	smp_vd = svd(smp)
+	#convert to GeoSeries and explode to single polygons
+	#note that it is NOT supported to GeoDataFrame directly
+	gs = gpd.GeoSeries([smp_vd]).explode()
+	#convert to GeoDataFrame
+	#note that if gdf was shapely.geometry.MultiPolygon, it has no attribute 'crs'
+	gdf_vd_primary = gpd.geodataframe.GeoDataFrame(geometry=gs, crs=4326)
+
+	#reset index
+	gdf_vd_primary.reset_index(drop=True)	#append(gdf)
+	#spatial join by intersecting and dissolve by `index_right`
+	gdf_temp = ( gpd.sjoin(gdf_vd_primary, gdf, how='inner', op='intersects')
+		.dissolve(by='index_right').reset_index(drop=True) )
+	gdf_vd = gpd.clip(gdf_temp, mask)
+	gdf_vd = dropHoles(gdf_vd)
+	return gdf_vd
+
+def dropHoles(gdf):
+	'''Remove / drop / fill the holes / empties for iterms in GeoDataFrame.
+
+	Parameters:
+		gdf:
+			Type: geopandas.GeoDataFrame
+	Returns:
+		gdf_nohole: GeoDataFrame without holes
+			Type: geopandas.GeoDataFrame
+	'''
+	gdf_nohole = gpd.GeoDataFrame()
+	for g in gdf['geometry']:
+		geo = gpd.GeoDataFrame(geometry=gpd.GeoSeries(dropHolesBase(g)))
+		gdf_nohole=gdf_nohole.append(geo,ignore_index=True)
+	gdf_nohole.rename(columns={gdf_nohole.columns[0]:'geometry'}, inplace=True)
+	gdf_nohole.crs = gdf.crs
+	return gdf_nohole
+
+def dropHolesBase(plg):
+	'''Basic function to remove / drop / fill the holes.
+
+	Parameters:
+		plg: plg who has holes / empties
+			Type: shapely.geometry.MultiPolygon or shapely.geometry.Polygon
+	Returns:
+		a shapely.geometry.MultiPolygon or shapely.geometry.Polygon object
+	'''
+	if isinstance(plg, MultiPolygon):
+		return MultiPolygon(Polygon(p.exterior) for p in plg)
+	elif isinstance(plg, Polygon):
+		return Polygon(plg.exterior)
 
 folder = "/Users/Palma/Documents/Githubs/v4w_website/app/static/files"
 path_graph = os.path.join(folder, 'dequa_ve_terra_v8_dequa_ve_terra_0509_pickle_4326VE')
