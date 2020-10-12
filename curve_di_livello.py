@@ -23,13 +23,9 @@ archi = gpd.read_file(archi_path)
 envelope_path = os.path.join(cl_folder, "TP_STR.shp")
 envelopes = gpd.read_file(envelope_path)
 
+import shapely
+print(shapely.__version__)
 from shapely.ops import voronoi_diagram
----------------------------------------------------------------------------
-ImportError                               Traceback (most recent call last)
-<ipython-input-17-d679c671ffc0> in <module>
-----> 1 from shapely.ops import voronoi_diagram
-
-ImportError: cannot import name 'voronoi_diagram' from 'shapely.ops' (/opt/anaconda3/lib/python3.7/site-packages/shapely/ops.py)
 
 for geom_polygon, polygon_id in envelopes[['geometry','CVE_SCOD_V']].values:
 
