@@ -9,26 +9,27 @@ import pdb
 import shapely.wkt as wkt
 import numpy as np
 #%%
-cl_folder = "/Volumes/Maxtor/Venezia/data/OpenDataVenezia/curve_livello"
-cl_path = os.path.join(cl_folder, "curve_livello_polyline_4326VE.shp")
+cl_folder = "/Users/ale/Downloads/curve_livello_polyline_4326VE_proj"
+cl_path = os.path.join(cl_folder, "curve_livello_polyline_4326VE_proj.shp")
+cl_path = os.path.join(cl_folder, "curve_livello_polyline_4326VE_proj_streetID.shp")
 curve_di_livello = gpd.read_file(cl_path)
-curve_di_livello['geometry'][0]
+#curve_di_livello['geometry'][0]
 geom_curves = curve_di_livello['geometry']
 curve_di_livello_4326 = curve_di_livello.to_crs(4326)
 #archi
-archi_folder = '/Volumes/Maxtor/Venezia/data/OpenDataVenezia/dequa_ve_shp/terra/v9'
-archi_path = os.path.join(archi_folder, "dequa_ve_terra_v9_0910.shp")
+archi_folder = '/Users/ale/Downloads/v9'
+archi_path = os.path.join(archi_folder, "dequa_ve_terra_v9.shp")
 archi = gpd.read_file(archi_path)
 
 #envelope per shapely
-envelope_folder = '/Volumes/Maxtor/Venezia/data/OpenDataVenezia'
-envelope_path = os.path.join(envelope_folder, "TP_STR_4326VE.shp")
+envelope_folder = '/Users/ale/Downloads/OpenDataVeneziaV4W'
+envelope_path = os.path.join(envelope_folder, "TP_STR_4326VE_fixed.shp")
 envelopes = gpd.read_file(envelope_path)
 
-path_graph = os.path.join(folder, 'dequa_ve_terra_v8_dequa_ve_terra_0509_pickle_4326VE')
-with open(path_graph, 'rb') as file:
-    G_un = pickle.load(file)
-
+# path_graph = os.path.join(folder, 'dequa_ve_terra_v8_dequa_ve_terra_0509_pickle_4326VE')
+# with open(path_graph, 'rb') as file:
+#     G_un = pickle.load(file)
+#%%
 import shapely
 print(shapely.__version__)
 from shapely.ops import voronoi_diagram
@@ -40,13 +41,18 @@ from shapely.ops import voronoi_diagram as svd
 from shapely.geometry import Polygon, MultiPolygon
 
 list_of_altitudes=np.linspace(80, 200,1)
-
+#%%
+i=0
 for geom_polygon, polygon_id in envelopes[['geometry','CVE_SCOD_V']].values:
-    if not polygon_id == 44340:
+    if polygon_id == 0: # alcuni poligoni hanno 0 e questo crea casini perché anche non è univoco…
         continue
-
-    edges = archi[archi['street_id']==polygon_id]
+    # i = i+1
+    # if i > 100:
+    #     break
+    print(f"*** Working with polygon: {polygon_id}")
+    edges = archi[archi['CVE_SCOD_V']==polygon_id]
     if edges.empty:
+        print(f'Edges in {polygon_id} empty')
         continue
     geom_edges = edges['geometry']
     edge_scaled = geom_edges.scale(xfact=0.9, yfact=0.9)
@@ -56,28 +62,40 @@ for geom_polygon, polygon_id in envelopes[['geometry','CVE_SCOD_V']].values:
     edge_in_polygon['edge_id'] = edge_in_polygon.index
     vd = voronoiDiagram4plg(edge_in_polygon, geom_polygon)
     vd['voronoi_id'] = vd.index
-    edge_in_polygon.to_file('edges.geojson', driver= "GeoJSON")
-    vd.to_file('output.geojson', driver='GeoJSON')
-
+    #edge_in_polygon.to_file(f'edges_{i}.geojson', driver= "GeoJSON")
+    #vd.to_file(f'output_{i}.geojson', driver='GeoJSON')
+    #print('File created')
     # interseca i singoli poligoni all'interno di un vd con le curve di livello
     #for ind in range(len(vd)):
-    curve_nel_vd = gpd.overlay(curve_di_livello_4326, vd, how='intersection')
+
     #curve_nel_vd = curve_di_livello_4326[curve_di_livello_4326.intersects(vd['geometry'][ind])]
     # max_tide = curve_nel_vd.dissolve(by='voronoi_id', aggfunc='max')
     # min_tide = curve_nel_vd.dissolve(by='voronoi_id', aggfunc='min')
     # avg_tide = curve_nel_vd.dissolve(by='voronoi_id', aggfunc='mean')
     # median_tide = curve_nel_vd.dissolve(by='voronoi_id', aggfunc='median')
-
-    min_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].min()
-    max_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].max()
-    avg_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].mean()
-    median_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].median()
-
-    edge_in_polygon['max_tide'] = max_tide #max(curve_nel_vd[curve_nel_vd['voronoi_id']==id])
-    edge_in_polygon['min_tide'] = min_tide #min(curve_nel_vd['LIVELLO_PS'])
-    edge_in_polygon['avg_tide'] = avg_tide
-    edge_in_polygon['median_tide'] = median_tide
-
+    curve_nel_polygon = curve_di_livello_4326[curve_di_livello_4326['CVE_SCOD_V']==polygon_id]
+    if curve_nel_polygon.empty:
+        print(f"Nessuna acqua alta in arco {polygon_id}")
+    else:
+        curve_nel_vd = gpd.overlay(curve_nel_polygon, vd, how='intersection')
+        if curve_nel_vd.empty:
+            print("Nessuna curva nei vd")
+        else:
+        min_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].min().reindex(vd.index)
+        max_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].max().reindex(vd.index)
+        avg_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].mean().reindex(vd.index)
+        median_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].median().reindex(vd.index)
+    #
+    # edge_in_polygon['max_tide'] = max_tide #max(curve_nel_vd[curve_nel_vd['voronoi_id']==id])
+    # edge_in_polygon['min_tide'] = min_tide #min(curve_nel_vd['LIVELLO_PS'])
+    # edge_in_polygon['avg_tide'] = avg_tide
+    # edge_in_polygon['median_tide'] = median_tide
+    #    print("archi {}, min_tide {}".format(archi[archi['CVE_SCOD_V']==polygon_id], min_tide))
+        archi.loc[archi['CVE_SCOD_V']==polygon_id,'max_tide'] = list(max_tide)
+        archi.loc[archi['CVE_SCOD_V']==polygon_id,'min_tide'] = list(min_tide)
+        archi.loc[archi['CVE_SCOD_V']==polygon_id,'avg_tide'] = list(avg_tide)
+        archi.loc[archi['CVE_SCOD_V']==polygon_id,'median_tide'] = list(median_tide)
+        print(f"Aggiunta acqua alta in arco {polygon_id}")
 
         # for alt in list_of_altitudes:
         #     curve_flooded = curve_di_livello[curve_di_livello['altitudine']<=alt]
@@ -116,9 +134,83 @@ for geom_polygon, polygon_id in envelopes[['geometry','CVE_SCOD_V']].values:
 	# 	.dissolve(by='index_right').reset_index(drop=True) )
     # gdf_vd = gpd.clip(gdf_temp, mask)
     # gdf_vd = dropHoles(gdf_vd)
-    break
+#edge_dataframe.to_file(f'edges_df.geojson', driver= "GeoJSON")
+# curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].min().reindex(vd.index)
+#
+# edge_dataframe
+# max_tide
+# min_tide
+# archi.loc[archi['CVE_SCOD_V']==44340, 'min_tide'] = list(min_tide)
+# a = np.nan
+# archi
 
+#
+# archi[archi['street_id']==polygon_id]['max_tide'] = max_tide
+# vd
 
+#%%
+i=0
+for geom_polygon, polygon_id in envelopes[['geometry','CVE_SCOD_V']].values:
+    i = i+1
+    print(i)
+    # if i == 10:
+    #     break
+    if not polygon_id == 44340:
+        continue
+    print(polygon_id)
+    edges = archi[archi['street_id']==polygon_id]
+    if edges.empty:
+        continue
+    geom_edges = edges['geometry']
+    edge_scaled = geom_edges.scale(xfact=0.9, yfact=0.9)
+    edge_dataframe = gpd.GeoDataFrame(geometry=edge_scaled, crs=4326).reset_index(drop=True)
+
+    edge_in_polygon = edge_dataframe[~edge_dataframe.disjoint(geom_polygon)].reset_index(drop=True)
+    edge_in_polygon['edge_id'] = edge_in_polygon.index
+    print(edge_in_polygon)
+    #print(edge_in_polygon)
+    #print(geom_polygon)
+    vd = voronoiDiagram4plg(edge_in_polygon, geom_polygon)
+    print(vd)
+    vd['voronoi_id'] = vd.index
+    #edge_in_polygon.to_file('edges.geojson', driver= "GeoJSON")
+    #vd.to_file('output.geojson', driver='GeoJSON')
+
+    # interseca i singoli poligoni all'interno di un vd con le curve di livello
+    #for ind in range(len(vd)):
+    ###
+    # curve_nel_vd contiene le curve per ogni mini archetto
+    ###
+    curve_nel_vd = gpd.overlay(curve_di_livello_4326, vd, how='intersection')
+    #curve_nel_vd = curve_di_livello_4326[curve_di_livello_4326.intersects(vd['geometry'][ind])]
+    # max_tide = curve_nel_vd.dissolve(by='voronoi_id', aggfunc='max')
+    # min_tide = curve_nel_vd.dissolve(by='voronoi_id', aggfunc='min')
+    # avg_tide = curve_nel_vd.dissolve(by='voronoi_id', aggfunc='mean')
+    # median_tide = curve_nel_vd.dissolve(by='voronoi_id', aggfunc='median')
+
+    min_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].min()
+    max_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].max()
+    avg_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].mean()
+    median_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].median()
+
+    edge_in_polygon['max_tide'] = max_tide #max(curve_nel_vd[curve_nel_vd['voronoi_id']==id])
+    edge_in_polygon['min_tide'] = min_tide #min(curve_nel_vd['LIVELLO_PS'])
+    edge_in_polygon['avg_tide'] = avg_tide
+    edge_in_polygon['median_tide'] = median_tide
+
+    # archi[archi['street_id']==polygon_id] --> è una strada (o campo)
+    # a noi servono gli archetti che contengono la strada
+    # max, min, avg e median tide sono vettori (con lunghezza = numero degli archetti )
+
+    #edge_dataframe[~edge_dataframe.disjoint(geom_polygon)].reset_index(drop=True)
+    #edge_in_polygon['edge_id'] = edge_in_polygon.index
+    print("archi {}, min_tide {}".format(archi[archi['street_id']==polygon_id], min_tide))
+    archi[archi['street_id']==polygon_id]['max_tide'] = max_tide
+    archi[archi['street_id']==polygon_id]['min_tide'] = min_tide
+    archi[archi['street_id']==polygon_id]['avg_tide'] = avg_tide
+    archi[archi['street_id']==polygon_id]['median_tide'] = median_tide
+
+#%%
 from shapely.geometry import MultiPoint, MultiLineString
 from shapely.ops import voronoi_diagram
 
@@ -147,7 +239,7 @@ for point in points:
 set_limits(ax, -1, 4, -1, 3)
 
 pyplot.show()
-
+#%%
 def bufferDissolve(gdf, distance, join_style=3):
 	'''Create buffer and dissolve thoese intersects.
 
@@ -232,7 +324,7 @@ def dropHolesBase(plg):
 		return MultiPolygon(Polygon(p.exterior) for p in plg)
 	elif isinstance(plg, Polygon):
 		return Polygon(plg.exterior)
-
+#%%
 folder = "/Users/Palma/Documents/Githubs/v4w_website/app/static/files"
 path_graph = os.path.join(folder, 'dequa_ve_terra_v8_dequa_ve_terra_0509_pickle_4326VE')
 with open(path_graph, 'rb') as file:

@@ -73,12 +73,12 @@ if __name__ == "__main__":
                 accessible.append(0)
         else:
             ponte.append(0)
-            accessible.append(1)        
+            accessible.append(1)
 
     print("creating a new dataframe only with the data we need..")
     # crea nuovo dataframe con solo colonne interessanti
     #pdb.set_trace()
-    total = gpd.GeoDataFrame(data = zip(lunghezza, ponte, accessible, streets["geometry"],streets['CVE_SUB_CO'],streets['VEL_MAX']), columns = ["length","ponte", "accessible","geometry","street_id","vel_max"])
+    total = gpd.GeoDataFrame(data = zip(lunghezza, ponte, accessible, streets["geometry"],streets['CVE_SCOD_V'],streets['VEL_MAX']), columns = ["length","ponte", "accessible","geometry","street_id","vel_max"])
 
     today = datetime.datetime.today().strftime ('%d%m')
 
