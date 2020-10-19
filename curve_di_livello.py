@@ -76,26 +76,29 @@ for geom_polygon, polygon_id in envelopes[['geometry','CVE_SCOD_V']].values:
     curve_nel_polygon = curve_di_livello_4326[curve_di_livello_4326['CVE_SCOD_V']==polygon_id]
     if curve_nel_polygon.empty:
         print(f"Nessuna acqua alta in arco {polygon_id}")
-    else:
-        curve_nel_vd = gpd.overlay(curve_nel_polygon, vd, how='intersection')
-        if curve_nel_vd.empty:
-            print("Nessuna curva nei vd")
-        else:
-        min_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].min().reindex(vd.index)
-        max_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].max().reindex(vd.index)
-        avg_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].mean().reindex(vd.index)
-        median_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].median().reindex(vd.index)
+        continue
+
+    curve_nel_vd = gpd.overlay(curve_nel_polygon, vd, how='intersection')
+
+    if curve_nel_vd.empty:
+        print("Nessuna curva nei vd")
+        continue
+
+    min_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].min().reindex(vd.index)
+    max_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].max().reindex(vd.index)
+    avg_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].mean().reindex(vd.index)
+    median_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].median().reindex(vd.index)
     #
     # edge_in_polygon['max_tide'] = max_tide #max(curve_nel_vd[curve_nel_vd['voronoi_id']==id])
     # edge_in_polygon['min_tide'] = min_tide #min(curve_nel_vd['LIVELLO_PS'])
     # edge_in_polygon['avg_tide'] = avg_tide
     # edge_in_polygon['median_tide'] = median_tide
     #    print("archi {}, min_tide {}".format(archi[archi['CVE_SCOD_V']==polygon_id], min_tide))
-        archi.loc[archi['CVE_SCOD_V']==polygon_id,'max_tide'] = list(max_tide)
-        archi.loc[archi['CVE_SCOD_V']==polygon_id,'min_tide'] = list(min_tide)
-        archi.loc[archi['CVE_SCOD_V']==polygon_id,'avg_tide'] = list(avg_tide)
-        archi.loc[archi['CVE_SCOD_V']==polygon_id,'median_tide'] = list(median_tide)
-        print(f"Aggiunta acqua alta in arco {polygon_id}")
+    archi.loc[archi['CVE_SCOD_V']==polygon_id,'max_tide'] = list(max_tide)
+    archi.loc[archi['CVE_SCOD_V']==polygon_id,'min_tide'] = list(min_tide)
+    archi.loc[archi['CVE_SCOD_V']==polygon_id,'avg_tide'] = list(avg_tide)
+    archi.loc[archi['CVE_SCOD_V']==polygon_id,'median_tide'] = list(median_tide)
+    print(f"Aggiunta acqua alta in arco {polygon_id}")
 
         # for alt in list_of_altitudes:
         #     curve_flooded = curve_di_livello[curve_di_livello['altitudine']<=alt]
