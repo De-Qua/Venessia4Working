@@ -55,14 +55,18 @@ for geom_polygon, polygon_id in envelopes[['geometry','V4W_ID']].values:
         print(f'Edges in {polygon_id} empty')
         continue
     geom_edges = edges['geometry']
-    edge_scaled = geom_edges.scale(xfact=0.99, yfact=0.99)
+    edge_scaled = geom_edges.scale(xfact=0.9, yfact=0.9)
     edge_dataframe = gpd.GeoDataFrame(geometry=edge_scaled, crs=4326).reset_index(drop=True)
+    # edge_buffer = bufferDissolve(edge_dataframe,10e-10)
+    # edge_dataframe.buffer(10e-10)
     edge_in_polygon = edge_dataframe
     #edge_in_polygon = edge_dataframe[~edge_dataframe.disjoint(geom_polygon)].reset_index(drop=True)
     edge_in_polygon['edge_id'] = edge_in_polygon.index
-    vd = voronoiDiagram4plg(edge_in_polygon, geom_polygon)
+    edge_buffer = bufferDissolve(edge_in_polygon,10e-8)
+    # vd = voronoiDiagram4plg(edge_in_polygon, geom_polygon)
+    vd = voronoiDiagram4plg(edge_buffer, geom_polygon)
     vd['voronoi_id'] = vd.index
-    # edge_in_polygon.to_file(f'edges_{i}.geojson', driver= "GeoJSON")
+    # edge_in_polygon.to_file(f'edges.geojson', driver= "GeoJSON")
     # edge_dataframe.to_file(f'edges_df.geojson', driver= "GeoJSON")
     # vd.to_file(f'output_{i}.geojson', driver='GeoJSON')
     # print('File created')
@@ -152,68 +156,10 @@ for geom_polygon, polygon_id in envelopes[['geometry','V4W_ID']].values:
 # archi[archi['street_id']==polygon_id]['max_tide'] = max_tide
 # vd
 
-#%%
-i=0
-for geom_polygon, polygon_id in envelopes[['geometry','CVE_SCOD_V']].values:
-    i = i+1
-    print(i)
-    # if i == 10:
-    #     break
-    if not polygon_id == 44340:
-        continue
-    print(polygon_id)
-    edges = archi[archi['street_id']==polygon_id]
-    if edges.empty:
-        continue
-    geom_edges = edges['geometry']
-    edge_scaled = geom_edges.scale(xfact=0.9, yfact=0.9)
-    edge_dataframe = gpd.GeoDataFrame(geometry=edge_scaled, crs=4326).reset_index(drop=True)
+e_un=bufferDissolve(edge_in_polygon,10e-8)
+vd=voronoiDiagram4plg(e_un,geom_polygon)
 
-    edge_in_polygon = edge_dataframe[~edge_dataframe.disjoint(geom_polygon)].reset_index(drop=True)
-    edge_in_polygon['edge_id'] = edge_in_polygon.index
-    print(edge_in_polygon)
-    #print(edge_in_polygon)
-    #print(geom_polygon)
-    vd = voronoiDiagram4plg(edge_in_polygon, geom_polygon)
-    print(vd)
-    vd['voronoi_id'] = vd.index
-    #edge_in_polygon.to_file('edges.geojson', driver= "GeoJSON")
-    #vd.to_file('output.geojson', driver='GeoJSON')
-
-    # interseca i singoli poligoni all'interno di un vd con le curve di livello
-    #for ind in range(len(vd)):
-    ###
-    # curve_nel_vd contiene le curve per ogni mini archetto
-    ###
-    curve_nel_vd = gpd.overlay(curve_di_livello_4326, vd, how='intersection')
-    #curve_nel_vd = curve_di_livello_4326[curve_di_livello_4326.intersects(vd['geometry'][ind])]
-    # max_tide = curve_nel_vd.dissolve(by='voronoi_id', aggfunc='max')
-    # min_tide = curve_nel_vd.dissolve(by='voronoi_id', aggfunc='min')
-    # avg_tide = curve_nel_vd.dissolve(by='voronoi_id', aggfunc='mean')
-    # median_tide = curve_nel_vd.dissolve(by='voronoi_id', aggfunc='median')
-
-    min_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].min()
-    max_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].max()
-    avg_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].mean()
-    median_tide = curve_nel_vd.groupby('voronoi_id')['LIVELLO_PS'].median()
-
-    edge_in_polygon['max_tide'] = max_tide #max(curve_nel_vd[curve_nel_vd['voronoi_id']==id])
-    edge_in_polygon['min_tide'] = min_tide #min(curve_nel_vd['LIVELLO_PS'])
-    edge_in_polygon['avg_tide'] = avg_tide
-    edge_in_polygon['median_tide'] = median_tide
-
-    # archi[archi['street_id']==polygon_id] --> è una strada (o campo)
-    # a noi servono gli archetti che contengono la strada
-    # max, min, avg e median tide sono vettori (con lunghezza = numero degli archetti )
-
-    #edge_dataframe[~edge_dataframe.disjoint(geom_polygon)].reset_index(drop=True)
-    #edge_in_polygon['edge_id'] = edge_in_polygon.index
-    print("archi {}, min_tide {}".format(archi[archi['street_id']==polygon_id], min_tide))
-    archi[archi['street_id']==polygon_id]['max_tide'] = max_tide
-    archi[archi['street_id']==polygon_id]['min_tide'] = min_tide
-    archi[archi['street_id']==polygon_id]['avg_tide'] = avg_tide
-    archi[archi['street_id']==polygon_id]['median_tide'] = median_tide
-
+geom_polygon.is_valid
 #%%
 from shapely.geometry import MultiPoint, MultiLineString
 from shapely.ops import voronoi_diagram
