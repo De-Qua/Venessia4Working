@@ -43,6 +43,7 @@ from shapely.geometry import Polygon, MultiPolygon
 list_of_altitudes=np.linspace(80, 200,1)
 #%%
 i=0
+err = 0
 for geom_polygon, polygon_id in envelopes[['geometry','V4W_ID']].values:
     if polygon_id == 0: # alcuni poligoni hanno 0 e questo crea casini perché anche non è univoco…
         continue
@@ -62,9 +63,12 @@ for geom_polygon, polygon_id in envelopes[['geometry','V4W_ID']].values:
     edge_in_polygon = edge_dataframe
     #edge_in_polygon = edge_dataframe[~edge_dataframe.disjoint(geom_polygon)].reset_index(drop=True)
     edge_in_polygon['edge_id'] = edge_in_polygon.index
-    edge_buffer = bufferDissolve(edge_in_polygon,10e-8)
-    # vd = voronoiDiagram4plg(edge_in_polygon, geom_polygon)
-    vd = voronoiDiagram4plg(edge_buffer, geom_polygon)
+    try:
+        vd = voronoiDiagram4plg(edge_in_polygon, geom_polygon)
+    except:
+        print("Topologic error in voronoi diagram")
+        err = err+1
+        continue
     vd['voronoi_id'] = vd.index
     # edge_in_polygon.to_file(f'edges.geojson', driver= "GeoJSON")
     # edge_dataframe.to_file(f'edges_df.geojson', driver= "GeoJSON")
@@ -156,10 +160,10 @@ for geom_polygon, polygon_id in envelopes[['geometry','V4W_ID']].values:
 # archi[archi['street_id']==polygon_id]['max_tide'] = max_tide
 # vd
 
-e_un=bufferDissolve(edge_in_polygon,10e-8)
-vd=voronoiDiagram4plg(e_un,geom_polygon)
-
-geom_polygon.is_valid
+err
+print(archi.groupby('max_tide').count())
+len(archi[archi["max_tide"].isna()])
+len(archi)
 #%%
 from shapely.geometry import MultiPoint, MultiLineString
 from shapely.ops import voronoi_diagram
