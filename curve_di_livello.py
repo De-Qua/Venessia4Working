@@ -11,19 +11,19 @@ import numpy as np
 #%%
 cl_folder = "/Users/ale/Downloads/curve_livello_polyline_4326VE_proj"
 cl_path = os.path.join(cl_folder, "curve_livello_polyline_4326VE_proj.shp")
-cl_path = os.path.join(cl_folder, "curve_livello_polyline_4326VE_proj_streetID.shp")
+cl_path = os.path.join(cl_folder, "curve_livello_polyline_4326VE_proj_V4Wid.shp")
 curve_di_livello = gpd.read_file(cl_path)
 #curve_di_livello['geometry'][0]
 geom_curves = curve_di_livello['geometry']
 curve_di_livello_4326 = curve_di_livello.to_crs(4326)
 #archi
-archi_folder = '/Users/ale/Downloads/v9'
-archi_path = os.path.join(archi_folder, "dequa_ve_terra_v9.shp")
+archi_folder = '/Users/ale/Downloads/v10'
+archi_path = os.path.join(archi_folder, "dequa_ve_terra_v10.shp")
 archi = gpd.read_file(archi_path)
 
 #envelope per shapely
 envelope_folder = '/Users/ale/Downloads/OpenDataVeneziaV4W'
-envelope_path = os.path.join(envelope_folder, "TP_STR_4326VE_fixed.shp")
+envelope_path = os.path.join(envelope_folder, "TP_STR_4326VE_fixed_V4Wid.shp")
 envelopes = gpd.read_file(envelope_path)
 
 # path_graph = os.path.join(folder, 'dequa_ve_terra_v8_dequa_ve_terra_0509_pickle_4326VE')
@@ -43,37 +43,38 @@ from shapely.geometry import Polygon, MultiPolygon
 list_of_altitudes=np.linspace(80, 200,1)
 #%%
 i=0
-for geom_polygon, polygon_id in envelopes[['geometry','CVE_SCOD_V']].values:
+for geom_polygon, polygon_id in envelopes[['geometry','V4W_ID']].values:
     if polygon_id == 0: # alcuni poligoni hanno 0 e questo crea casini perché anche non è univoco…
         continue
     # i = i+1
     # if i > 100:
     #     break
     print(f"*** Working with polygon: {polygon_id}")
-    edges = archi[archi['CVE_SCOD_V']==polygon_id]
+    edges = archi[archi['V4W_ID']==polygon_id]
     if edges.empty:
         print(f'Edges in {polygon_id} empty')
         continue
     geom_edges = edges['geometry']
-    edge_scaled = geom_edges.scale(xfact=0.9, yfact=0.9)
+    edge_scaled = geom_edges.scale(xfact=0.99, yfact=0.99)
     edge_dataframe = gpd.GeoDataFrame(geometry=edge_scaled, crs=4326).reset_index(drop=True)
-
-    edge_in_polygon = edge_dataframe[~edge_dataframe.disjoint(geom_polygon)].reset_index(drop=True)
+    edge_in_polygon = edge_dataframe
+    #edge_in_polygon = edge_dataframe[~edge_dataframe.disjoint(geom_polygon)].reset_index(drop=True)
     edge_in_polygon['edge_id'] = edge_in_polygon.index
     vd = voronoiDiagram4plg(edge_in_polygon, geom_polygon)
     vd['voronoi_id'] = vd.index
-    #edge_in_polygon.to_file(f'edges_{i}.geojson', driver= "GeoJSON")
-    #vd.to_file(f'output_{i}.geojson', driver='GeoJSON')
-    #print('File created')
-    # interseca i singoli poligoni all'interno di un vd con le curve di livello
-    #for ind in range(len(vd)):
+    # edge_in_polygon.to_file(f'edges_{i}.geojson', driver= "GeoJSON")
+    # edge_dataframe.to_file(f'edges_df.geojson', driver= "GeoJSON")
+    # vd.to_file(f'output_{i}.geojson', driver='GeoJSON')
+    # print('File created')
+    # #interseca i singoli poligoni all'interno di un vd con le curve di livello
+    # for ind in range(len(vd)):
 
     #curve_nel_vd = curve_di_livello_4326[curve_di_livello_4326.intersects(vd['geometry'][ind])]
     # max_tide = curve_nel_vd.dissolve(by='voronoi_id', aggfunc='max')
     # min_tide = curve_nel_vd.dissolve(by='voronoi_id', aggfunc='min')
     # avg_tide = curve_nel_vd.dissolve(by='voronoi_id', aggfunc='mean')
     # median_tide = curve_nel_vd.dissolve(by='voronoi_id', aggfunc='median')
-    curve_nel_polygon = curve_di_livello_4326[curve_di_livello_4326['CVE_SCOD_V']==polygon_id]
+    curve_nel_polygon = curve_di_livello_4326[curve_di_livello_4326['V4W_ID']==polygon_id]
     if curve_nel_polygon.empty:
         print(f"Nessuna acqua alta in arco {polygon_id}")
         continue
@@ -94,10 +95,10 @@ for geom_polygon, polygon_id in envelopes[['geometry','CVE_SCOD_V']].values:
     # edge_in_polygon['avg_tide'] = avg_tide
     # edge_in_polygon['median_tide'] = median_tide
     #    print("archi {}, min_tide {}".format(archi[archi['CVE_SCOD_V']==polygon_id], min_tide))
-    archi.loc[archi['CVE_SCOD_V']==polygon_id,'max_tide'] = list(max_tide)
-    archi.loc[archi['CVE_SCOD_V']==polygon_id,'min_tide'] = list(min_tide)
-    archi.loc[archi['CVE_SCOD_V']==polygon_id,'avg_tide'] = list(avg_tide)
-    archi.loc[archi['CVE_SCOD_V']==polygon_id,'median_tide'] = list(median_tide)
+    archi.loc[archi['V4W_ID']==polygon_id,'max_tide'] = list(max_tide)
+    archi.loc[archi['V4W_ID']==polygon_id,'min_tide'] = list(min_tide)
+    archi.loc[archi['V4W_ID']==polygon_id,'avg_tide'] = list(avg_tide)
+    archi.loc[archi['V4W_ID']==polygon_id,'median_tide'] = list(median_tide)
     print(f"Aggiunta acqua alta in arco {polygon_id}")
 
         # for alt in list_of_altitudes:

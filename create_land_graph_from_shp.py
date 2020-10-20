@@ -78,7 +78,7 @@ if __name__ == "__main__":
     print("creating a new dataframe only with the data we need..")
     # crea nuovo dataframe con solo colonne interessanti
     #pdb.set_trace()
-    total = gpd.GeoDataFrame(data = zip(lunghezza, ponte, accessible, streets["geometry"],streets['CVE_SCOD_V'],streets['VEL_MAX']), columns = ["length","ponte", "accessible","geometry","street_id","vel_max"])
+    total = gpd.GeoDataFrame(data = zip(lunghezza, ponte, accessible, streets["geometry"],streets['V4W_ID'],streets['VEL_MAX']), columns = ["length","ponte", "accessible","geometry","street_id","vel_max"])
 
     today = datetime.datetime.today().strftime ('%d%m')
 
