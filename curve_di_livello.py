@@ -106,7 +106,7 @@ for geom_polygon, polygon_id in envelopes[['geometry','V4W_ID']].values:
     archi.loc[archi['V4W_ID']==polygon_id,'max_tide'] = list(max_tide)
     archi.loc[archi['V4W_ID']==polygon_id,'min_tide'] = list(min_tide)
     archi.loc[archi['V4W_ID']==polygon_id,'avg_tide'] = list(avg_tide)
-    archi.loc[archi['V4W_ID']==polygon_id,'median_tide'] = list(median_tide)
+    archi.loc[archi['V4W_ID']==polygon_id,'med_tide'] = list(median_tide)
     print(f"Aggiunta acqua alta in arco {polygon_id}")
 
         # for alt in list_of_altitudes:
@@ -160,10 +160,14 @@ for geom_polygon, polygon_id in envelopes[['geometry','V4W_ID']].values:
 # archi[archi['street_id']==polygon_id]['max_tide'] = max_tide
 # vd
 
-err
-print(archi.groupby('max_tide').count())
-len(archi[archi["max_tide"].isna()])
-len(archi)
+print('errors: ',err)
+print('nan tides: ', len(archi[archi["max_tide"].isna()]))
+print('num of edges: ', len(archi))
+#%% Save output
+folder_output = "/Users/ale/Downloads/v10/acquaalta"
+name_output = "dequa_ve_terra_v10.shp"
+archi.to_file(os.path.join(folder_output, name_output))
+
 #%%
 from shapely.geometry import MultiPoint, MultiLineString
 from shapely.ops import voronoi_diagram
