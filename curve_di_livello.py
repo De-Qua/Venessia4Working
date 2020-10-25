@@ -10,20 +10,20 @@ import shapely.wkt as wkt
 import numpy as np
 #%%
 cl_folder = "/Users/ale/Downloads/curve_livello_polyline_4326VE_proj"
-cl_path = os.path.join(cl_folder, "curve_livello_polyline_4326VE_proj.shp")
-cl_path = os.path.join(cl_folder, "curve_livello_polyline_4326VE_proj_V4Wid.shp")
+# cl_path = os.path.join(cl_folder, "curve_livello_polyline_4326VE_proj.shp")
+cl_path = os.path.join(cl_folder, "curve_livello_polyline_4326VE_proj_V4Wid_ok.shp")
 curve_di_livello = gpd.read_file(cl_path)
 #curve_di_livello['geometry'][0]
 geom_curves = curve_di_livello['geometry']
 curve_di_livello_4326 = curve_di_livello.to_crs(4326)
 #archi
-archi_folder = '/Users/ale/Downloads/v10'
-archi_path = os.path.join(archi_folder, "dequa_ve_terra_v10.shp")
+archi_folder = '/Users/ale/Downloads/v11'
+archi_path = os.path.join(archi_folder, "dequa_ve_terra_v11.shp")
 archi = gpd.read_file(archi_path)
 
 #envelope per shapely
-envelope_folder = '/Users/ale/Downloads/OpenDataVeneziaV4W'
-envelope_path = os.path.join(envelope_folder, "TP_STR_4326VE_fixed_V4Wid.shp")
+envelope_folder = '/Users/ale/Downloads/TP_STR'
+envelope_path = os.path.join(envelope_folder, "TP_STR_v2")
 envelopes = gpd.read_file(envelope_path)
 
 # path_graph = os.path.join(folder, 'dequa_ve_terra_v8_dequa_ve_terra_0509_pickle_4326VE')
@@ -164,8 +164,10 @@ print('errors: ',err)
 print('nan tides: ', len(archi[archi["max_tide"].isna()]))
 print('num of edges: ', len(archi))
 #%% Save output
-folder_output = "/Users/ale/Downloads/v10/acquaalta"
-name_output = "dequa_ve_terra_v10.shp"
+folder_output = "/Users/ale/Downloads/v11/acquaalta"
+name_output = "dequa_ve_terra_v11.shp"
+if not os.path.exists(folder_output):
+    os.mkdir(folder_output)
 archi.to_file(os.path.join(folder_output, name_output))
 
 #%%
