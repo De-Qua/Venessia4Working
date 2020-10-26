@@ -21,6 +21,9 @@ archi_folder = '/Users/ale/Downloads/v11'
 archi_path = os.path.join(archi_folder, "dequa_ve_terra_v11.shp")
 archi = gpd.read_file(archi_path)
 
+gpd.io.file.infer_schema(archi)
+archi.schema
+
 #envelope per shapely
 envelope_folder = '/Users/ale/Downloads/TP_STR'
 envelope_path = os.path.join(envelope_folder, "TP_STR_v2")
@@ -164,11 +167,21 @@ print('errors: ',err)
 print('nan tides: ', len(archi[archi["max_tide"].isna()]))
 print('num of edges: ', len(archi))
 #%% Save output
+# get original schema of the data (i.e. integer, string, float with respective width)
+import fiona
+with fiona.open(archi_path) as f:
+    input_schema = f.schema
+# add the new fields as integer
+input_schema['properties']['max_tide'] = 'int:10'
+input_schema['properties']['min_tide'] = 'int:10'
+input_schema['properties']['avg_tide'] = 'int:10'
+input_schema['properties']['med_tide'] = 'int:10'
+
 folder_output = "/Users/ale/Downloads/v11/acquaalta"
 name_output = "dequa_ve_terra_v11.shp"
 if not os.path.exists(folder_output):
     os.mkdir(folder_output)
-archi.to_file(os.path.join(folder_output, name_output))
+archi.to_file(os.path.join(folder_output, name_output), schema=input_schema)
 
 #%%
 from shapely.geometry import MultiPoint, MultiLineString
