@@ -36,11 +36,11 @@ if __name__ == "__main__":
 
     list_of_Codice_Pon_flat = ["MELONI"]
     # L'elenco di questi ponti è preso da https://www.comune.venezia.it/it/content/venezia-accessibile-itinerari-senza-barriere
-    list_of_Codice_Pon_gradino_agevolato = ["PAGLIA","SECHER","PIERO","RASPI","GUGLIE","PAPADO"]
+    list_of_Codice_Pon_gradino_agevolato = ["PAGLIA", "SECHER", "PIERO", "RASPI", "GUGLIE", "PAPADO"]
     list_of_Codice_Pon_gradino_agevolato_con_accomp = ["FELICE"]
-    list_of_Codice_Pon_rampa_fissa = ["QUINTA","PALUDO"]
+    list_of_Codice_Pon_rampa_fissa = ["QUINTA", "PALUDO"]
     list_of_Codice_Pon_rampa_provvisoria_feb_nov = ["VIN"]
-    list_of_Codice_Pon_rampa_provvisoria_set_giu = ["MOLIN","SALUTE","CABALA","INCURA","CALCINA","LUNGO"]
+    list_of_Codice_Pon_rampa_provvisoria_set_giu = ["MOLIN", "SALUTE", "CABALA", "INCURA", "CALCINA", "LUNGO"]
     list_of_Codice_Pon_rampa_provvisoria_mag_nov = ["VENETA"]
 
     ponte = []
@@ -77,13 +77,19 @@ if __name__ == "__main__":
 
     print("creating a new dataframe only with the data we need..")
     # crea nuovo dataframe con solo colonne interessanti
-    #pdb.set_trace()
-    total = gpd.GeoDataFrame(data = zip(lunghezza, ponte, accessible, streets["geometry"],streets['V4W_ID'],streets['VEL_MAX'],streets['max_tide'],streets['min_tide'],streets['avg_tide'],streets['med_tide']),
-                            columns = ["length","ponte", "accessible","geometry","street_id","vel_max","max_tide","min_tide","avg_tide","med_tide"])
+    # pdb.set_trace()
+    total = gpd.GeoDataFrame(data=zip(lunghezza, ponte, accessible,
+                                      streets["geometry"], streets['V4W_ID'], streets['VEL_MAX'],
+                                      streets['max_tide'], streets['min_tide'], streets['avg_tide'], streets['med_tide'],
+                                      streets['Pass_cmZPS'], streets['Pass_altez']),
+                             columns=["length", "ponte", "accessible",
+                                      "geometry", "street_id",
+                                      "vel_max", "max_tide", "min_tide", "avg_tide", "med_tide",
+                                      "passerelle_cm_zps", "passerrelle_height"])
 
-    today = datetime.datetime.today().strftime ('%d%m')
+    today = datetime.datetime.today().strftime('%d%m')
 
-    print("saving the adapted version as the name plus suffix _{today} to understand..")# salva nuovo dataframe in shp
+    print("saving the adapted version as the name plus suffix _{today} to understand..")  # salva nuovo dataframe in shp
     new_shp_name = "{}_{}.shp".format(shp_path[:-4], today)
     total.to_file(new_shp_name)
 
