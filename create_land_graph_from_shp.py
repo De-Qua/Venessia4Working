@@ -85,7 +85,7 @@ if __name__ == "__main__":
                              columns=["length", "ponte", "accessible",
                                       "geometry", "street_id",
                                       "vel_max", "max_tide", "min_tide", "avg_tide", "med_tide",
-                                      "passerelle_cm_zps", "passerrelle_height"])
+                                      "pas_cm_zps", "pas_height"])
 
     today = datetime.datetime.today().strftime('%d%m')
 

@@ -9,7 +9,7 @@ import pdb
 import shapely.wkt as wkt
 import numpy as np
 #%%
-cl_folder = "/Users/ale/Downloads/curve_livello_polyline_4326VE_proj"
+cl_folder = "/Volumes/Maxtor/Venezia/data/OpenDataVenezia/curve_livello"
 # cl_path = os.path.join(cl_folder, "curve_livello_polyline_4326VE_proj.shp")
 cl_path = os.path.join(cl_folder, "curve_livello_polyline_4326VE_proj_V4Wid_ok.shp")
 curve_di_livello = gpd.read_file(cl_path)
@@ -17,16 +17,15 @@ curve_di_livello = gpd.read_file(cl_path)
 geom_curves = curve_di_livello['geometry']
 curve_di_livello_4326 = curve_di_livello.to_crs(4326)
 #archi
-archi_folder = '/Users/ale/Downloads/v11'
-archi_path = os.path.join(archi_folder, "dequa_ve_terra_v11.shp")
+archi_folder = '/Volumes/Maxtor/Venezia/data/OpenDataVenezia/dequa_ve_shp/terra/v13'
+archi_path = os.path.join(archi_folder, "dequa_ve_terra_v13.shp")
 archi = gpd.read_file(archi_path)
 
 gpd.io.file.infer_schema(archi)
-archi.schema
 
 #envelope per shapely
-envelope_folder = '/Users/ale/Downloads/TP_STR'
-envelope_path = os.path.join(envelope_folder, "TP_STR_v2")
+envelope_folder = '/Volumes/Maxtor/Venezia/data/OpenDataVenezia/TP_STR'
+envelope_path = os.path.join(envelope_folder, "TP_STR_v3.shp")
 envelopes = gpd.read_file(envelope_path)
 
 # path_graph = os.path.join(folder, 'dequa_ve_terra_v8_dequa_ve_terra_0509_pickle_4326VE')
@@ -177,41 +176,41 @@ input_schema['properties']['min_tide'] = 'int:10'
 input_schema['properties']['avg_tide'] = 'int:10'
 input_schema['properties']['med_tide'] = 'int:10'
 
-folder_output = "/Users/ale/Downloads/v11/acquaalta"
-name_output = "dequa_ve_terra_v11.shp"
+folder_output = "/Volumes/Maxtor/Venezia/data/OpenDataVenezia/dequa_ve_shp/terra/v13/acquaalta"
+name_output = "dequa_ve_terra_v13.shp"
 if not os.path.exists(folder_output):
     os.mkdir(folder_output)
 archi.to_file(os.path.join(folder_output, name_output), schema=input_schema)
 
-#%%
-from shapely.geometry import MultiPoint, MultiLineString
-from shapely.ops import voronoi_diagram
-
-from matplotlib import pyplot
-from descartes.patch import PolygonPatch
-from figures import SIZE, BLUE, GRAY, set_limits
-
-points = MultiPoint([(0, 0), (1, 1), (0, 2), (2, 2), (3, 1), (1, 0)])
-lines = MultiLineString([[(0,0), (1,1)], [(1.1,1.1), (2,2)]])
-polygons = [Polygon([(0,0),(1,1),(0.9,0.9),(0.1,0.1)]),Polygon([(2,2),(3,3),(2.9,2.9),(2.1,2.1)])]
-regions = voronoi_diagram(points)
-regions_lines = voronoi_diagram(lines)
-regions_polygons = voronoi_diagram(polygons)
-
-fig = pyplot.figure(1, dpi=90)
-fig.set_frameon(True)
-ax = fig.add_subplot(111)
-
-for region in regions:
-    patch = PolygonPatch(region, facecolor='blue', edgecolor='blue', alpha=0.5, zorder=2)
-    ax.add_patch(patch)
-
-for point in points:
-    pyplot.plot(point.x, point.y, 'o', color='black')
-
-set_limits(ax, -1, 4, -1, 3)
-
-pyplot.show()
+# #%%
+# from shapely.geometry import MultiPoint, MultiLineString
+# from shapely.ops import voronoi_diagram
+#
+# from matplotlib import pyplot
+# from descartes.patch import PolygonPatch
+# from figures import SIZE, BLUE, GRAY, set_limits
+#
+# points = MultiPoint([(0, 0), (1, 1), (0, 2), (2, 2), (3, 1), (1, 0)])
+# lines = MultiLineString([[(0,0), (1,1)], [(1.1,1.1), (2,2)]])
+# polygons = [Polygon([(0,0),(1,1),(0.9,0.9),(0.1,0.1)]),Polygon([(2,2),(3,3),(2.9,2.9),(2.1,2.1)])]
+# regions = voronoi_diagram(points)
+# regions_lines = voronoi_diagram(lines)
+# regions_polygons = voronoi_diagram(polygons)
+#
+# fig = pyplot.figure(1, dpi=90)
+# fig.set_frameon(True)
+# ax = fig.add_subplot(111)
+#
+# for region in regions:
+#     patch = PolygonPatch(region, facecolor='blue', edgecolor='blue', alpha=0.5, zorder=2)
+#     ax.add_patch(patch)
+#
+# for point in points:
+#     pyplot.plot(point.x, point.y, 'o', color='black')
+#
+# set_limits(ax, -1, 4, -1, 3)
+#
+# pyplot.show()
 #%%
 def bufferDissolve(gdf, distance, join_style=3):
 	'''Create buffer and dissolve thoese intersects.
