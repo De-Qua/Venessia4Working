@@ -133,7 +133,7 @@ if __name__ == "__main__":
 
     if not out_path:
         pth, ext = os.path.splitext(shp_path)
-        out_path = os.path.join(pth,'.gt')
+        out_path = pth+'.gt'
 
     graph = shp2gt(shp_path)
     graph.save(out_path)
