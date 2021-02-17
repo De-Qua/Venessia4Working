@@ -36,11 +36,11 @@ if __name__ == "__main__":
 
     list_of_Codice_Pon_flat = ["MELONI"]
     # L'elenco di questi ponti è preso da https://www.comune.venezia.it/it/content/venezia-accessibile-itinerari-senza-barriere
-    list_of_Codice_Pon_gradino_agevolato = ["PAGLIA","SECHER","PIERO","RASPI","GUGLIE","PAPADO"]
+    list_of_Codice_Pon_gradino_agevolato = ["PAGLIA", "SECHER", "PIERO", "RASPI", "GUGLIE", "PAPADO"]
     list_of_Codice_Pon_gradino_agevolato_con_accomp = ["FELICE"]
-    list_of_Codice_Pon_rampa_fissa = ["QUINTA","PALUDO"]
+    list_of_Codice_Pon_rampa_fissa = ["QUINTA", "PALUDO"]
     list_of_Codice_Pon_rampa_provvisoria_feb_nov = ["VIN"]
-    list_of_Codice_Pon_rampa_provvisoria_set_giu = ["MOLIN","SALUTE","CABALA","INCURA","CALCINA","LUNGO"]
+    list_of_Codice_Pon_rampa_provvisoria_set_giu = ["MOLIN", "SALUTE", "CABALA", "INCURA", "CALCINA", "LUNGO"]
     list_of_Codice_Pon_rampa_provvisoria_mag_nov = ["VENETA"]
 
     ponte = []
@@ -73,17 +73,24 @@ if __name__ == "__main__":
                 accessible.append(0)
         else:
             ponte.append(0)
-            accessible.append(1)        
+            accessible.append(1)
 
     print("creating a new dataframe only with the data we need..")
     # crea nuovo dataframe con solo colonne interessanti
-    #pdb.set_trace()
-    total = gpd.GeoDataFrame(data = zip(lunghezza, ponte, accessible, streets["geometry"],streets['CVE_SUB_CO'],streets['VEL_MAX']), columns = ["length","ponte", "accessible","geometry","street_id","vel_max"])
+    # pdb.set_trace()
+    total = gpd.GeoDataFrame(data=zip(lunghezza, ponte, accessible,
+                                      streets["geometry"], streets['V4W_ID'], streets['VEL_MAX'],
+                                      streets['max_tide'], streets['min_tide'], streets['avg_tide'], streets['med_tide'],
+                                      streets['Pass_cmZPS'], streets['Pass_altez']),
+                             columns=["length", "ponte", "accessible",
+                                      "geometry", "street_id",
+                                      "vel_max", "max_tide", "min_tide", "avg_tide", "med_tide",
+                                      "pas_cm_zps", "pas_height"])
 
-    today = datetime.datetime.today().strftime ('%d%m')
+    today = datetime.datetime.today().strftime('%d%m')
 
-    print("saving the adapted version as the name plus suffix _dequa_{today} to understand..")# salva nuovo dataframe in shp
-    new_shp_name = "{}_dequa_ve_terra_{}.shp".format(shp_path[:-4], today)
+    print("saving the adapted version as the name plus suffix _{today} to understand..")  # salva nuovo dataframe in shp
+    new_shp_name = "{}_{}.shp".format(shp_path[:-4], today)
     total.to_file(new_shp_name)
 
     print("now create the graph with networkx..")
