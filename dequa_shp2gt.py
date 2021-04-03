@@ -26,6 +26,7 @@ def progressbar(current_value,total_value,step=5,text='',progressSymbol='=',rema
 
 def retrieve_attribute_type(attribute):
     dequa_types = {
+        # grafo di terra
         'length': 'float',
         'ponte': 'int',
         'accessible': 'int',
@@ -37,7 +38,18 @@ def retrieve_attribute_type(attribute):
         'med_tide': 'float',
         'pas_cm_zps': 'float',
         'pas_height': 'float',
-        'geometry': 'object'
+        'geometry': 'object',
+        # grafo di acqua
+        'vel_max_mp': 'float',
+        'solo_remi': 'int',
+        'larghezza': 'float',
+        'altezza': 'float',
+        'senso_unic': 'float',
+        'h_su_start': 'int',
+        'h_su_end': 'int',
+        'dt_start': 'int',
+        'dt_end': 'int',
+        'nome': 'string'
     }
     if attribute in dequa_types.keys():
         return dequa_types[attribute]
@@ -73,11 +85,20 @@ def shp2gt(shp_path):
     print("Reading the file...")
     df = gpd.read_file(shp_path)
 
+    if 'solo_remi' in df.columns:
+        water_graph = True
+        print("It is a water graph")
+    else:
+        water_graph = False
+        print("It is a street graph")
+
     print("The file has {} edges.".format(len(df)))
     print("Each edge has these attributes: {}".format([col for col in df.columns]))
 
     print("Creating the graph...")
     g = Graph(directed=False)
+    if water_graph:
+        g.set_directed(True)
 
     # Add attributes as edge properties
     for col in df.columns:
@@ -92,10 +113,27 @@ def shp2gt(shp_path):
     # Start extracting the info iterating by all the rows
     for index, row in df.iterrows():
         source, target = get_vertices_from_geometry(g, row['geometry'])
-        edge = g.add_edge(source, target)
+        # if it is a water graph we check the direction
+        if water_graph:
+            if row['senso_unic'] == -1:
+                # it is already correct
+                edge = g.add_edge(source, target)
+                edge2 = None
+            elif row['senso_unic'] == 1:
+                edge = g.add_edge(target, source)
+                edge2 = None
+            else:
+                edge = g.add_edge(source, target)
+                edge2 = g.add_edge(target, source)
+        else:
+            edge = g.add_edge(source, target)
+            edge2 = None
         # add the properties to the edge
         for property in row.keys():
             g.ep[property][edge] = row[property]
+            if edge2:
+                g.ep[property][edge2] = row[property]
+            
         progressbar(index+1, len(df))
 
     print("GRAPH PROPERTIES")
