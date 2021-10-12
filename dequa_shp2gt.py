@@ -4,6 +4,7 @@ import geopandas as gpd
 
 from graph_tool import Graph
 from graph_tool.util import find_vertex
+from graph_tool.all import label_components
 
 def progressbar(current_value,total_value,step=5,text='',progressSymbol='=',remainingSymbol=' ',currentSymbol=''):
     assert (100%step) == 0
@@ -133,9 +134,14 @@ def shp2gt(shp_path):
             g.ep[property][edge] = row[property]
             if edge2:
                 g.ep[property][edge2] = row[property]
-            
-        progressbar(index+1, len(df))
 
+        progressbar(index+1, len(df))
+    # add property component
+    comp, hist = label_components(g)
+    # starting from 1 to avoid confusion if more edges are added
+    comp.a += 1
+    g.vp.component = comp
+    
     print("GRAPH PROPERTIES")
     print (g.list_properties())
     print("================")
