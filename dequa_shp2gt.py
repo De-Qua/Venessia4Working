@@ -50,7 +50,18 @@ def retrieve_attribute_type(attribute):
         'h_su_end': 'int',
         'dt_start': 'int',
         'dt_end': 'int',
-        'nome': 'string'
+        'nome': 'string',
+        # quale la differenza con `senso_unic` ?
+        'one_way': 'int', # it can have 0, 1 and -1
+        # non sono sicuro, forse per descrizione proprio semantica?
+        'DESCR': 'string',
+        'CLASS': 'int',
+        # moto ondoso (valori manuali)
+        'motoondoso': 'int', 
+        # profondita' dei canali (presi dalle batimetriche)
+        'prof_min': 'float',
+        'prof_max': 'float',
+        'prof_mean': 'float',
     }
     if attribute in dequa_types.keys():
         return dequa_types[attribute]
@@ -131,6 +142,7 @@ def shp2gt(shp_path):
             edge2 = None
         # add the properties to the edge
         for property in row.keys():
+            print(f"Updating prop {property} of edge {edge}")
             g.ep[property][edge] = row[property]
             if edge2:
                 g.ep[property][edge2] = row[property]
